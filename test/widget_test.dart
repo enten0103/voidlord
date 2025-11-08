@@ -16,7 +16,7 @@ void main() {
     Get.testMode = true;
     // 测试环境需要手动注册全局服务
     Get.put<AuthService>(AuthService(), permanent: true);
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const App());
 
     // 初始为登录页
     expect(find.text('登录'), findsOneWidget);

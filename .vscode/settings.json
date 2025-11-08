@@ -1,0 +1,8 @@
+// .vscode/settings.json
+{
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "pubspec.yaml": "pubspec.lock,analysis_options.yaml,.flutter-plugins-dependencies,.packages,.metadata,*.iml,.gitignore",
+    },
+    "editor.formatOnSave": true
+}

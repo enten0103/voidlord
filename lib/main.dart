@@ -3,15 +3,15 @@ import 'package:get/get.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'routes/app_pages.dart';
-import 'bootstrap/bootstrap.dart';
+import 'bootstrap.dart';
 
 void main() async {
   await bootstrap();
-  runApp(const MyApp());
+  runApp(const App());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       },
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
-      defaultTransition: Transition.fadeIn,
+      defaultTransition: Transition.cupertino,
     );
   }
 }

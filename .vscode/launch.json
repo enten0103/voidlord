@@ -1,0 +1,77 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "voidlord",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "voidlord (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "voidlord (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "Flutter Windows - dev",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "windows",
+            "toolArgs": [
+                "--dart-define=FLAVOR=dev",
+                "--dart-define=BACKEND_BASE_URL=http://localhost:8080"
+            ]
+        },
+        {
+            "name": "Flutter Windows - test",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "windows",
+            "toolArgs": [
+                "--dart-define=FLAVOR=test",
+                "--dart-define=BACKEND_BASE_URL=https://test.api.example.com"
+            ]
+        },
+        {
+            "name": "Flutter Windows - prod",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "windows",
+            "flutterMode": "release",
+            "toolArgs": [
+                "--dart-define=FLAVOR=prod",
+                "--dart-define=BACKEND_BASE_URL=https://api.example.com"
+            ]
+        },
+        {
+            "name": "Flutter Chrome - test",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "chrome",
+            "toolArgs": [
+                "--dart-define=FLAVOR=test",
+                "--dart-define=BACKEND_BASE_URL=https://staging.example.com"
+            ]
+        },
+        {
+            "name": "Flutter Android - prod",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "android",
+            "flutterMode": "release",
+            "toolArgs": [
+                "--dart-define=FLAVOR=prod",
+                "--dart-define=BACKEND_BASE_URL=https://api.example.com"
+            ]
+        }
+    ]
+}

@@ -21,7 +21,20 @@ class LoginController extends GetxController {
     if (ok) {
       Get.offAllNamed(Routes.root);
     } else {
-      error.value = '登录失败';
+      final msg = _auth.lastError.value ?? '登录失败，请检查用户名或密码';
+      Get.dialog(
+        AlertDialog(
+          title: const Text('登录失败'),
+          content: Text(msg),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(),
+              child: const Text('确定'),
+            )
+          ],
+        ),
+        barrierDismissible: true,
+      );
     }
   }
 }
@@ -146,19 +159,7 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
-                    // 错误信息
-                    Obx(
-                      () => c.error.value == null
-                          ? const SizedBox.shrink()
-                          : Text(
-                              c.error.value ?? '',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                            ),
-                    ),
+                    // 错误采用弹窗反馈，不在表单下方展示
                   ],
                 ),
               ),

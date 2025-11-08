@@ -46,3 +46,37 @@ flutter run
 ```powershell
 flutter test
 ```
+
+## 构建时环境（env/build config）
+
+本项目提供基于 `--dart-define` 的构建期常量注入能力，集中在 `lib/config/app_environment.dart`：
+
+- 变量
+	- `FLAVOR`：环境标识（如 dev/test/prod），默认 `dev`
+	- `BACKEND_BASE_URL`：后端基础地址，默认 `http://localhost:8080`
+	- `SENTRY_DSN`：可选的 DSN，默认空字符串
+- 使用位置
+	- `BackendService` 会读取 `AppEnvironment.baseUrl` 作为统一的后端地址来源
+	- 入口处会注入 `BackendService` 到 GetX 容器
+
+示例：
+
+Windows（开发运行）：
+
+```powershell
+flutter run -d windows --dart-define=FLAVOR=dev --dart-define=BACKEND_BASE_URL=http://127.0.0.1:8080
+```
+
+Android（打包）：
+
+```powershell
+flutter build apk --release --dart-define=FLAVOR=prod --dart-define=BACKEND_BASE_URL=https://api.example.com
+```
+
+Web：
+
+```powershell
+flutter run -d chrome --dart-define=FLAVOR=test --dart-define=BACKEND_BASE_URL=https://staging.example.com
+```
+
+注意：`String.fromEnvironment` 是编译期常量机制，修改值需重新构建/运行。

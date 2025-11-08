@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/auth_service.dart';
 import '../routes/app_routes.dart';
+import '../widgets/app_title_bar.dart';
 
 class RootPage extends StatelessWidget {
   const RootPage({super.key});
@@ -10,8 +11,8 @@ class RootPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = Get.find<AuthService>();
     return Scaffold(
-      appBar: AppBar(
-        title: Text('root_title'.tr),
+      appBar: AppTitleBar(
+        title: 'root_title',
         actions: [
           IconButton(
             key: const Key('logoutButton'),

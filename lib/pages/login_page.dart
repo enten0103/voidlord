@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../routes/app_routes.dart';
 import '../services/auth_service.dart';
+import '../widgets/app_title_bar.dart';
 
 class LoginController extends GetxController {
   final username = ''.obs;
@@ -32,7 +33,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.put(LoginController());
     return Scaffold(
-      appBar: AppBar(title: Text('login'.tr)),
+      appBar: const AppTitleBar(title: 'login'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

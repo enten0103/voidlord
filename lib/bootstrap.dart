@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'config/app_environment.dart';
 import 'services/auth_service.dart';
@@ -13,15 +13,21 @@ Future<void> bootstrap() async {
 }
 
 Future<void> initWindowsWindowSetup() async {
-  if (GetPlatform.isWindows && !Get.testMode) {
-    doWhenWindowReady(() {
-      final win = appWindow;
-      const initialSize = Size(1000, 680);
-      win.minSize = const Size(800, 560);
-      win.size = initialSize;
-      win.alignment = Alignment.center;
-      win.title = 'VoidLord';
-      win.show();
+  if ((GetPlatform.isWindows || GetPlatform.isLinux || GetPlatform.isMacOS) &&
+      !Get.testMode) {
+    await windowManager.ensureInitialized();
+    const initialSize = Size(1080, 720);
+    const minSize = Size(400, 400);
+    final options = const WindowOptions(
+      size: initialSize,
+      minimumSize: minSize,
+      center: true,
+      titleBarStyle: TitleBarStyle.hidden,
+      title: 'VoidLord',
+    );
+    await windowManager.waitUntilReadyToShow(options, () async {
+      await windowManager.show();
+      await windowManager.focus();
     });
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// Windows 自定义标题栏支持
-import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:window_manager/window_manager.dart';
 
 /// 跨平台标题栏组件：
 /// - Windows: 使用自绘无边框窗口 + 拖拽区域 + 系统控制按钮
@@ -24,21 +23,23 @@ class AppTitleBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-  // 测试环境或非 Windows 时回退到标准 AppBar，避免插件在测试中加载原生库
-  if (GetPlatform.isWindows && !Get.testMode) {
-      return WindowTitleBarBox(
-        child: Container(
+    // 测试环境或非 Windows 时回退到标准 AppBar，避免插件在测试中加载原生库
+    if (GetPlatform.isWindows && !Get.testMode) {
+      return SizedBox(
+        height: height,
+        child: Material(
           color: backgroundColor ?? Theme.of(context).colorScheme.surface,
           child: Row(
             children: [
               // 拖拽区域
               Expanded(
-                child: MoveWindow(
+                child: DragToMoveArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Align(
-                      alignment:
-                          centerTitle ? Alignment.center : Alignment.centerLeft,
+                      alignment: centerTitle
+                          ? Alignment.center
+                          : Alignment.centerLeft,
                       child: Text(
                         title,
                         style: Theme.of(context).textTheme.titleMedium,
@@ -59,8 +60,7 @@ class AppTitleBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(title),
       centerTitle: centerTitle,
-      backgroundColor:
-          backgroundColor ?? Theme.of(context).colorScheme.surface,
+      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
       actions: actions,
     );
   }
@@ -74,24 +74,36 @@ class _WindowButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final hoverColor = theme.colorScheme.primary.withValues(alpha: 0.08);
+    final hoverColor = theme.colorScheme.primary.withValues(alpha: 0.08);
     return Row(
       children: [
         _WindowButton(
           icon: Icons.remove,
-          onTap: () => appWindow.minimize(),
+          onTap: () {
+            windowManager.minimize();
+          },
           tooltip: 'Minimize',
           hoverColor: hoverColor,
         ),
         _WindowButton(
           icon: Icons.crop_square,
-          onTap: () => appWindow.maximizeOrRestore(),
-          tooltip: appWindow.isMaximized ? 'Restore' : 'Maximize',
+          onTap: () {
+            windowManager.isMaximized().then((v) {
+              if (v) {
+                windowManager.unmaximize();
+              } else {
+                windowManager.maximize();
+              }
+            });
+          },
+          tooltip: 'Maximize/Restore',
           hoverColor: hoverColor,
         ),
         _WindowButton(
           icon: Icons.close,
-          onTap: () => appWindow.close(),
+          onTap: () {
+            windowManager.close();
+          },
           tooltip: 'Close',
           hoverColor: theme.colorScheme.error.withValues(alpha: 0.15),
           iconColor: theme.colorScheme.error,
@@ -135,9 +147,9 @@ class _WindowButtonState extends State<_WindowButton> {
             duration: const Duration(milliseconds: 120),
             width: 46,
             height: double.infinity,
-      color: _hover
-        ? widget.hoverColor ?? colorScheme.surfaceContainerHighest
-        : null,
+            color: _hover
+                ? widget.hoverColor ?? colorScheme.surfaceContainerHighest
+                : null,
             child: Icon(
               widget.icon,
               size: 18,

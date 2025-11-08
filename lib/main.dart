@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'routes/app_pages.dart';
 import 'bootstrap.dart';
@@ -22,16 +21,7 @@ class App extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      builder: (context, child) {
-        if (GetPlatform.isWindows && !Get.testMode) {
-          return WindowBorder(
-            color: Colors.indigo.withValues(alpha: 0.4),
-            width: 1,
-            child: child ?? const SizedBox.shrink(),
-          );
-        }
-        return child ?? const SizedBox.shrink();
-      },
+      builder: (context, child) => child ?? const SizedBox.shrink(),
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
       defaultTransition: Transition.cupertino,

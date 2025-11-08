@@ -27,10 +27,7 @@ class LoginController extends GetxController {
           title: const Text('登录失败'),
           content: Text(msg),
           actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text('确定'),
-            )
+            TextButton(onPressed: () => Get.back(), child: const Text('确定')),
           ],
         ),
         barrierDismissible: true,

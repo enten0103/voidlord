@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://api.example.com",
+  "extras": {
+    "observability": {
+      "sentry": true
+    }
+  }
+}

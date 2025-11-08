@@ -1,0 +1,8 @@
+{
+  "baseUrl": "https://test.api.example.com",
+  "extras": {
+    "featureFlags": {
+      "newLogin": false
+    }
+  }
+}

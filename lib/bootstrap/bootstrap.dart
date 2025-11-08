@@ -5,6 +5,7 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 import '../config/app_environment.dart';
 import '../services/auth_service.dart';
 import '../services/backend_service.dart';
+import '../services/config_service.dart';
 
 /// Perform app pre-start initialization before runApp.
 Future<void> bootstrap() async {
@@ -13,6 +14,13 @@ Future<void> bootstrap() async {
   // Compile-time env constants (access to trigger class loading)
   AppEnvironment.flavor;
   AppEnvironment.baseUrl;
+
+  // Load layered config (json assets by flavor)
+  if (!Get.isRegistered<ConfigService>()) {
+    final configService = ConfigService();
+    await configService.init();
+    Get.put<ConfigService>(configService, permanent: true);
+  }
 
   // Global services
   if (!Get.isRegistered<AuthService>()) {

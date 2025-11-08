@@ -33,7 +33,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Get.put(LoginController());
     return Scaffold(
-      appBar: const AppTitleBar(title: 'login'),
+      appBar: const AppTitleBar(title: '登录'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -41,13 +41,13 @@ class LoginPage extends StatelessWidget {
           children: [
             TextField(
               key: const Key('usernameField'),
-              decoration: InputDecoration(labelText: 'username'.tr),
+              decoration: const InputDecoration(labelText: '用户名'),
               onChanged: (v) => c.username.value = v,
             ),
             const SizedBox(height: 12),
             TextField(
               key: const Key('passwordField'),
-              decoration: InputDecoration(labelText: 'password'.tr),
+              decoration: const InputDecoration(labelText: '密码'),
               obscureText: true,
               onChanged: (v) => c.password.value = v,
             ),
@@ -61,7 +61,7 @@ class LoginPage extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text('login_action'.tr),
+                      : const Text('立即登录'),
                 )),
             Obx(() => c.error.value == null
                 ? const SizedBox.shrink()

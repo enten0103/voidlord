@@ -58,31 +58,6 @@ class MyApp extends StatelessWidget {
       initialRoute: AppPages.initial,
       getPages: AppPages.pages,
       defaultTransition: Transition.fadeIn,
-      translations: _SimpleTranslations(),
-      locale: const Locale('zh', 'CN'),
     );
   }
-}
-
-// 简单的国际化示例（可后续扩展）
-class _SimpleTranslations extends Translations {
-  @override
-  Map<String, Map<String, String>> get keys => {
-        'zh_CN': {
-          'login': '登录',
-          'username': '用户名',
-          'password': '密码',
-          'login_action': '立即登录',
-          'root_title': '应用主体',
-          'logout': '退出登录',
-        },
-        'en_US': {
-          'login': 'Login',
-          'username': 'Username',
-          'password': 'Password',
-          'login_action': 'Sign In',
-          'root_title': 'Root Page',
-          'logout': 'Logout',
-        }
-      };
 }

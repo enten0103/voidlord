@@ -12,7 +12,7 @@ class RootPage extends StatelessWidget {
     final auth = Get.find<AuthService>();
     return Scaffold(
       appBar: AppTitleBar(
-        title: 'root_title',
+        title: '应用主体',
         actions: [
           IconButton(
             key: const Key('logoutButton'),
@@ -21,12 +21,12 @@ class RootPage extends StatelessWidget {
               Get.offAllNamed(Routes.login);
             },
             icon: const Icon(Icons.logout),
-            tooltip: 'logout'.tr,
+            tooltip: '退出登录',
           )
         ],
       ),
       body: Center(
-        child: Text('root_title'.tr, style: Theme.of(context).textTheme.headlineMedium),
+        child: Text('应用主体', style: Theme.of(context).textTheme.headlineMedium),
       ),
     );
   }

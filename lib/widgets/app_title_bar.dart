@@ -40,7 +40,7 @@ class AppTitleBar extends StatelessWidget implements PreferredSizeWidget {
                       alignment:
                           centerTitle ? Alignment.center : Alignment.centerLeft,
                       child: Text(
-                        title.tr,
+                        title,
                         style: Theme.of(context).textTheme.titleMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -57,7 +57,7 @@ class AppTitleBar extends StatelessWidget implements PreferredSizeWidget {
     }
     // 默认平台使用标准 AppBar
     return AppBar(
-      title: Text(title.tr),
+      title: Text(title),
       centerTitle: centerTitle,
       backgroundColor:
           backgroundColor ?? Theme.of(context).colorScheme.surface,

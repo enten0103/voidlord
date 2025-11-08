@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
-import 'auth_api_service.dart';
+import '../apis/client.dart';
+import '../apis/auth_api.dart';
 
 class AuthService extends GetxService {
   final loggedIn = false.obs;
@@ -14,10 +15,11 @@ class AuthService extends GetxService {
       return false;
     }
 
-    final api = Get.put<AuthApiService>(AuthApiService(), permanent: true);
     try {
       final data = await api.login(username: username, password: password);
       if (data['access_token'] != null) {
+        // 设置 token 供后续请求复用
+        api.setBearerToken(data['access_token'] as String);
         loggedIn.value = true;
         return true;
       }

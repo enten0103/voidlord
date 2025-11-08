@@ -5,6 +5,7 @@ import 'package:window_manager/window_manager.dart';
 import 'config/app_environment.dart';
 import 'services/auth_service.dart';
 import 'services/config_service.dart';
+import 'services/theme_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,5 +41,10 @@ Future initDependencies() async {
   await configService.init();
 
   Get.put<ConfigService>(configService, permanent: true);
-  Get.put<AuthService>(AuthService(), permanent: true);
+  final auth = AuthService();
+  await auth.init();
+  Get.put<AuthService>(auth, permanent: true);
+  final themeService = ThemeService();
+  await themeService.init();
+  Get.put<ThemeService>(themeService, permanent: true);
 }

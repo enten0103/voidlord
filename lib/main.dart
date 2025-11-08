@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'services/theme_service.dart';
 
 import 'routes/app_pages.dart';
 import 'bootstrap.dart';
@@ -14,17 +15,20 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      title: 'VoidLord Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+    final themeService = Get.find<ThemeService>();
+
+    return Obx(
+      () => GetMaterialApp(
+        title: 'VoidLord Demo',
+        debugShowCheckedModeBanner: false,
+        theme: themeService.lightTheme,
+        darkTheme: themeService.darkTheme,
+        themeMode: themeService.mode.value,
+        builder: (context, child) => child ?? const SizedBox.shrink(),
+        initialRoute: AppPages.initial,
+        getPages: AppPages.pages,
+        defaultTransition: Transition.cupertino,
       ),
-      builder: (context, child) => child ?? const SizedBox.shrink(),
-      initialRoute: AppPages.initial,
-      getPages: AppPages.pages,
-      defaultTransition: Transition.cupertino,
     );
   }
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
-import '../services/auth_service.dart';
-import '../routes/app_routes.dart';
 
 class RootController extends GetxController {
   final index = 0.obs;
@@ -30,17 +28,7 @@ class RootPage extends StatelessWidget {
       final i = controller.index.value;
       return ResponsiveScaffold(
         title: titles[i],
-        actions: [
-          IconButton(
-            key: const Key('logoutButton'),
-            icon: const Icon(Icons.logout),
-            tooltip: '退出登录',
-            onPressed: () {
-              Get.find<AuthService>().logout();
-              Get.offAllNamed(Routes.login);
-            },
-          ),
-        ],
+        actions: const [],
         pages: pages,
         items: const [
           NavItem(

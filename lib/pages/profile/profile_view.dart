@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'profile_controller.dart';
+import '../../services/auth_service.dart';
 
 class ProfileView extends StatefulWidget {
   const ProfileView({super.key});
@@ -82,6 +83,15 @@ class _ProfileViewState extends State<ProfileView> {
                       onPressed: () => Get.toNamed('/settings'),
                       icon: const Icon(Icons.settings),
                       label: const Text('设置'),
+                    ),
+                    OutlinedButton.icon(
+                      key: const Key('logoutButton'),
+                      onPressed: () async {
+                        await Get.find<AuthService>().logout();
+                        Get.offAllNamed('/login');
+                      },
+                      icon: const Icon(Icons.logout),
+                      label: const Text('退出登录'),
                     ),
                   ],
                 ),

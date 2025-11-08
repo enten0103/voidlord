@@ -4,7 +4,6 @@ import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 import 'config/app_environment.dart';
 import 'services/auth_service.dart';
-import 'services/backend_service.dart';
 import 'services/config_service.dart';
 
 Future<void> bootstrap() async {
@@ -36,5 +35,4 @@ Future initDependencies() async {
 
   Get.put<ConfigService>(configService, permanent: true);
   Get.put<AuthService>(AuthService(), permanent: true);
-  Get.put<BackendService>(BackendService(), permanent: true);
 }

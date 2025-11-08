@@ -23,7 +23,6 @@ class App extends StatelessWidget {
         useMaterial3: true,
       ),
       builder: (context, child) {
-        // 包裹一个 WindowBorder 仅 Windows 下生效，测试模式下禁用
         if (GetPlatform.isWindows && !Get.testMode) {
           return WindowBorder(
             color: Colors.indigo.withValues(alpha: 0.4),

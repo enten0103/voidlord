@@ -15,7 +15,7 @@ class LoginController extends GetxController {
   Future<void> submit() async {
     if (loading.value) return;
     loading.value = true;
-  error.value = null;
+    error.value = null;
     final ok = await _auth.login(username.value, password.value);
     loading.value = false;
     if (ok) {
@@ -52,23 +52,27 @@ class LoginPage extends StatelessWidget {
               onChanged: (v) => c.password.value = v,
             ),
             const SizedBox(height: 24),
-            Obx(() => ElevatedButton(
-                  key: const Key('loginButton'),
-                  onPressed: c.loading.value ? null : c.submit,
-                  child: c.loading.value
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('立即登录'),
-                )),
-            Obx(() => c.error.value == null
-                ? const SizedBox.shrink()
-                : Text(
-                    c.error.value ?? '',
-                    style: const TextStyle(color: Colors.red),
-                  ))
+            Obx(
+              () => ElevatedButton(
+                key: const Key('loginButton'),
+                onPressed: c.loading.value ? null : c.submit,
+                child: c.loading.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('立即登录'),
+              ),
+            ),
+            Obx(
+              () => c.error.value == null
+                  ? const SizedBox.shrink()
+                  : Text(
+                      c.error.value ?? '',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+            ),
           ],
         ),
       ),

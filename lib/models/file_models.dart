@@ -3,7 +3,10 @@ class PresignedUrlResponse {
   final String key;
   PresignedUrlResponse({required this.url, required this.key});
   factory PresignedUrlResponse.fromJson(Map<String, dynamic> json) =>
-      PresignedUrlResponse(url: json['url'] as String, key: json['key'] as String);
+      PresignedUrlResponse(
+        url: json['url'] as String,
+        key: json['key'] as String,
+      );
   Map<String, dynamic> toJson() => {'url': url, 'key': key};
 }
 
@@ -20,7 +23,8 @@ class UploadResultDto {
     this.mime,
     this.url,
   });
-  factory UploadResultDto.fromJson(Map<String, dynamic> json) => UploadResultDto(
+  factory UploadResultDto.fromJson(Map<String, dynamic> json) =>
+      UploadResultDto(
         ok: json['ok'] == true,
         key: json['key'] as String,
         size: (json['size'] as num).toInt(),
@@ -28,12 +32,12 @@ class UploadResultDto {
         url: json['url'] as String?,
       );
   Map<String, dynamic> toJson() => {
-        'ok': ok,
-        'key': key,
-        'size': size,
-        if (mime != null) 'mime': mime,
-        if (url != null) 'url': url,
-      };
+    'ok': ok,
+    'key': key,
+    'size': size,
+    if (mime != null) 'mime': mime,
+    if (url != null) 'url': url,
+  };
 }
 
 class OkMessageResponse {
@@ -41,11 +45,14 @@ class OkMessageResponse {
   final String? message;
   OkMessageResponse({required this.ok, this.message});
   factory OkMessageResponse.fromJson(Map<String, dynamic> json) =>
-      OkMessageResponse(ok: json['ok'] == true, message: json['message'] as String?);
+      OkMessageResponse(
+        ok: json['ok'] == true,
+        message: json['message'] as String?,
+      );
   Map<String, dynamic> toJson() => {
-        'ok': ok,
-        if (message != null) 'message': message,
-      };
+    'ok': ok,
+    if (message != null) 'message': message,
+  };
 }
 
 class FilesApiError implements Exception {

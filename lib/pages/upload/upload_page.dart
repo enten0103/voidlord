@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../widgets/side_baner.dart';
 import '../../apis/client.dart';
+import '../../apis/files_api.dart';
 import 'package:dio/dio.dart';
 
 class UploadPage extends StatefulWidget {
@@ -130,11 +131,11 @@ class _UploadPageState extends State<UploadPage> {
       final form = FormData.fromMap({
         'file': await MultipartFile.fromFile(file.path),
       });
-      final res = await api.client.post('/files/upload', data: form);
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        SideBanner.info('上传完成');
+      final result = await api.uploadMultipart(form);
+      if (result.ok) {
+        SideBanner.info('上传完成: ${result.key}');
       } else {
-        SideBanner.danger('上传失败: ${res.statusCode}');
+        SideBanner.danger('上传失败');
       }
       setState(() => selected = null);
     } catch (e) {

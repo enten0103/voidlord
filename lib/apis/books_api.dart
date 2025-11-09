@@ -16,7 +16,7 @@ extension BooksApi on Api {
     final Response res = await client.get(
       '/books',
       queryParameters: {
-        if (tags != null && tags.isNotEmpty) 'tags': tags.join(',')
+        if (tags != null && tags.isNotEmpty) 'tags': tags.join(','),
       },
     );
     if (res.statusCode == 200 && res.data is List) {
@@ -64,7 +64,8 @@ extension BooksApi on Api {
     }
     if (res.statusCode == 401) throw BooksApiError('未登录', statusCode: 401);
     if (res.statusCode == 403) throw BooksApiError('权限不足', statusCode: 403);
-    if (res.statusCode == 409) throw BooksApiError('冲突: 标签或数据不合法', statusCode: 409);
+    if (res.statusCode == 409)
+      throw BooksApiError('冲突: 标签或数据不合法', statusCode: 409);
     throw BooksApiError('创建图书失败', statusCode: res.statusCode);
   }
 
@@ -141,8 +142,11 @@ extension BooksApi on Api {
   }
 
   // 顶层评论列表
-  Future<CommentsList> listComments(int bookId,
-      {int? limit, int? offset}) async {
+  Future<CommentsList> listComments(
+    int bookId, {
+    int? limit,
+    int? offset,
+  }) async {
     final Response res = await client.get(
       '/books/$bookId/comments',
       queryParameters: {
@@ -160,7 +164,10 @@ extension BooksApi on Api {
   }
 
   // 新增顶层评论
-  Future<CommentCreateResponse> createComment(int bookId, String content) async {
+  Future<CommentCreateResponse> createComment(
+    int bookId,
+    String content,
+  ) async {
     final Response res = await client.post(
       '/books/$bookId/comments',
       data: {'content': content},
@@ -183,7 +190,10 @@ extension BooksApi on Api {
 
   // 回复某条评论
   Future<CommentCreateResponse> replyComment(
-      int bookId, int commentId, String content) async {
+    int bookId,
+    int commentId,
+    String content,
+  ) async {
     final Response res = await client.post(
       '/books/$bookId/comments/$commentId/replies',
       data: {'content': content},
@@ -205,8 +215,12 @@ extension BooksApi on Api {
   }
 
   // 列出某条评论的回复
-  Future<RepliesList> listReplies(int bookId, int commentId,
-      {int? limit, int? offset}) async {
+  Future<RepliesList> listReplies(
+    int bookId,
+    int commentId, {
+    int? limit,
+    int? offset,
+  }) async {
     final Response res = await client.get(
       '/books/$bookId/comments/$commentId/replies',
       queryParameters: {

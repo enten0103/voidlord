@@ -1,23 +1,21 @@
 import 'package:dio/dio.dart';
 import 'client.dart';
+import '../models/login_response.dart';
 
 extension AuthApi on Api {
   /// 调用后端登录接口
-  /// 成功时返回后端 JSON Map（包含 access_token, user 等）
-  Future<Map<String, dynamic>> login({
+  /// 成功时返回强类型 LoginResponse（包含 access_token, user 等）
+  Future<LoginResponse> login({
     required String username,
     required String password,
   }) async {
     try {
       final Response res = await client.post(
         '/auth/login',
-        data: {
-          'username': username,
-          'password': password,
-        },
+        data: {'username': username, 'password': password},
       );
       if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
-        return res.data as Map<String, dynamic>;
+        return LoginResponse.fromJson(res.data as Map<String, dynamic>);
       }
       throw DioException(
         requestOptions: res.requestOptions,
@@ -33,9 +31,8 @@ extension AuthApi on Api {
       if (status == 401) {
         throw AuthApiError('用户名或密码错误');
       }
-      if (status == 409) {
-        throw AuthApiError('用户名或邮箱已存在');
-      }
+      // /auth/login 不应返回 409，但为稳健保留处理
+      if (status == 409) throw AuthApiError('用户名或邮箱已存在');
       throw AuthApiError('网络错误，请稍后重试');
     } catch (_) {
       throw AuthApiError('发生未知错误');

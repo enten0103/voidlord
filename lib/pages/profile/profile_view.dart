@@ -3,113 +3,122 @@ import 'package:get/get.dart';
 import 'profile_controller.dart';
 import '../../services/auth_service.dart';
 
-class ProfileView extends StatefulWidget {
+class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
   @override
-  State<ProfileView> createState() => _ProfileViewState();
-}
-
-class _ProfileViewState extends State<ProfileView> {
-  late final ProfileController c;
-
-  @override
-  void initState() {
-    super.initState();
-    c = Get.put(ProfileController());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return Obx(() {
-      if (c.loading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      return Align(
-        alignment: Alignment.topCenter,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+    final textTheme = Get.theme.textTheme;
+    return GetBuilder<ProfileController>(
+      init: ProfileController(),
+      builder: (controller) {
+        return Obx(() {
+          if (controller.loading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage:
-                          c.avatarUrl != null && c.avatarUrl!.isNotEmpty
-                          ? NetworkImage(c.avatarUrl!)
-                          : null,
-                      child: (c.avatarUrl == null || c.avatarUrl!.isEmpty)
-                          ? const Icon(Icons.person, size: 40)
-                          : null,
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(c.displayName, style: textTheme.titleLarge),
-                          const SizedBox(height: 4),
-                          Text(c.bio, style: textTheme.bodyMedium),
-                          if (c.error.value != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              c.error.value!,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage:
+                              controller.avatarUrl != null &&
+                                  controller.avatarUrl!.isNotEmpty
+                              ? NetworkImage(controller.avatarUrl!)
+                              : null,
+                          child:
+                              (controller.avatarUrl == null ||
+                                  controller.avatarUrl!.isEmpty)
+                              ? const Icon(Icons.person, size: 40)
+                              : null,
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                controller.displayName,
+                                style: textTheme.titleLarge,
                               ),
+                              const SizedBox(height: 4),
+                              Text(controller.bio, style: textTheme.bodyMedium),
+                              if (controller.error.value != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  controller.error.value!,
+                                  style: TextStyle(
+                                    color: Get.theme.colorScheme.error,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 8,
+                      children: [
+                        FilledButton.icon(
+                          onPressed: () => Get.toNamed('/profile/edit'),
+                          icon: const Icon(Icons.edit),
+                          label: const Text('资料'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => Get.toNamed('/settings'),
+                          icon: const Icon(Icons.settings),
+                          label: const Text('设置'),
+                        ),
+                        OutlinedButton.icon(
+                          style: ButtonStyle(
+                            foregroundColor: WidgetStateProperty.all(
+                              Get.theme.colorScheme.error,
                             ),
-                          ],
-                        ],
-                      ),
+                            side: WidgetStateProperty.all(
+                              BorderSide(color: Get.theme.colorScheme.error),
+                            ),
+                          ),
+                          key: const Key('logoutButton'),
+                          onPressed: () async {
+                            await Get.find<AuthService>().logout();
+                            Get.offAllNamed('/login');
+                          },
+                          icon: const Icon(Icons.logout),
+                          label: const Text('登出'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _infoCard(
+                      children: [
+                        _kv('界面主题', _themeLabel(controller.theme)),
+                        _kv('语言', controller.locale),
+                        _kv('时区', controller.timezone),
+                        _kv(
+                          '邮件通知',
+                          controller.emailNotifications ? '开启' : '关闭',
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.icon(
-                      onPressed: () => Get.toNamed('/profile/edit'),
-                      icon: const Icon(Icons.edit),
-                      label: const Text('资料'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: () => Get.toNamed('/settings'),
-                      icon: const Icon(Icons.settings),
-                      label: const Text('设置'),
-                    ),
-                    OutlinedButton.icon(
-                      key: const Key('logoutButton'),
-                      onPressed: () async {
-                        await Get.find<AuthService>().logout();
-                        Get.offAllNamed('/login');
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: const Text('登录'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _infoCard(
-                  children: [
-                    _kv('界面主题', _themeLabel(c.theme)),
-                    _kv('语言', c.locale),
-                    _kv('时区', c.timezone),
-                    _kv('邮件通知', c.emailNotifications ? '开启' : '关闭'),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      );
-    });
+          );
+        });
+      },
+    );
   }
 
   String _themeLabel(String v) {
@@ -146,12 +155,10 @@ class _ProfileViewState extends State<ProfileView> {
       children: [
         SizedBox(
           width: 90,
-          child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+          child: Text(label, style: Get.theme.textTheme.labelMedium),
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
-        ),
+        Expanded(child: Text(value, style: Get.theme.textTheme.bodyMedium)),
       ],
     );
   }

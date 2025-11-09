@@ -99,21 +99,8 @@ class ProfileEditController extends GetxController {
   }
 }
 
-class ProfileEditView extends StatefulWidget {
+class ProfileEditView extends StatelessWidget {
   const ProfileEditView({super.key});
-
-  @override
-  State<ProfileEditView> createState() => _ProfileEditViewState();
-}
-
-class _ProfileEditViewState extends State<ProfileEditView> {
-  late final ProfileEditController c;
-
-  @override
-  void initState() {
-    super.initState();
-    c = Get.put(ProfileEditController());
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,57 +112,83 @@ class _ProfileEditViewState extends State<ProfileEditView> {
             ? DragToMoveArea(child: Container(color: Colors.transparent))
             : null,
       ),
-      body: Obx(() {
-        if (c.loading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              _textField('展示名', c.displayNameCtrl, hint: '例如：Alice'),
-              const SizedBox(height: 12),
-              _textField('简介', c.bioCtrl, maxLines: 3, hint: '一句话介绍你自己'),
-              const SizedBox(height: 12),
-              _textField('头像URL', c.avatarUrlCtrl, hint: 'http(s)://'),
-              const SizedBox(height: 12),
-              _textField('语言', c.localeCtrl, hint: 'zh-CN'),
-              const SizedBox(height: 12),
-              _textField('时区', c.timezoneCtrl, hint: 'Asia/Shanghai'),
-              const SizedBox(height: 12),
-              _themeDropdown(),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                title: const Text('邮件通知'),
-                value: c.emailNotifications.value,
-                onChanged: (v) => c.emailNotifications.value = v,
+      body: GetBuilder<ProfileEditController>(
+        init: ProfileEditController(),
+        builder: (controller) {
+          return Obx(() {
+            if (controller.loading.value) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _textField(
+                    '展示名',
+                    controller.displayNameCtrl,
+                    hint: '例如：Alice',
+                  ),
+                  const SizedBox(height: 12),
+                  _textField(
+                    '简介',
+                    controller.bioCtrl,
+                    maxLines: 3,
+                    hint: '一句话介绍你自己',
+                  ),
+                  const SizedBox(height: 12),
+                  _textField(
+                    '头像URL',
+                    controller.avatarUrlCtrl,
+                    hint: 'http(s)://',
+                  ),
+                  const SizedBox(height: 12),
+                  _textField('语言', controller.localeCtrl, hint: 'zh-CN'),
+                  const SizedBox(height: 12),
+                  _textField(
+                    '时区',
+                    controller.timezoneCtrl,
+                    hint: 'Asia/Shanghai',
+                  ),
+                  const SizedBox(height: 12),
+                  _themeDropdown(controller),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    title: const Text('邮件通知'),
+                    value: controller.emailNotifications.value,
+                    onChanged: (v) => controller.emailNotifications.value = v,
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: controller.saving.value
+                          ? null
+                          : controller.save,
+                      icon: controller.saving.value
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save),
+                      label: const Text('保存'),
+                    ),
+                  ),
+                  if (controller.error.value != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      controller.error.value!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: c.saving.value ? null : c.save,
-                  icon: c.saving.value
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: const Text('保存'),
-                ),
-              ),
-              if (c.error.value != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  c.error.value!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ],
-          ),
-        );
-      }),
+            );
+          });
+        },
+      ),
     );
   }
 
@@ -196,7 +209,7 @@ class _ProfileEditViewState extends State<ProfileEditView> {
     );
   }
 
-  Widget _themeDropdown() {
+  Widget _themeDropdown(ProfileEditController controller) {
     return InputDecorator(
       decoration: const InputDecoration(
         labelText: '主题',
@@ -206,13 +219,13 @@ class _ProfileEditViewState extends State<ProfileEditView> {
         child: Obx(
           () => DropdownButton<String>(
             isExpanded: true,
-            value: c.theme.value,
+            value: controller.theme.value,
             items: const [
               DropdownMenuItem(value: 'system', child: Text('跟随系统')),
               DropdownMenuItem(value: 'light', child: Text('浅色')),
               DropdownMenuItem(value: 'dark', child: Text('深色')),
             ],
-            onChanged: (v) => c.theme.value = v ?? 'system',
+            onChanged: (v) => controller.theme.value = v ?? 'system',
           ),
         ),
       ),

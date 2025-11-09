@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../apis/permission_api.dart';
 import '../apis/client.dart';
 
 class PermissionService extends GetxService {
@@ -18,28 +19,18 @@ class PermissionService extends GetxService {
 
   Future<void> load() async {
     if (Get.testMode) {
-      // 测试环境默认无权限
       levels.clear();
       return;
     }
     try {
-      final res = await api.client.get('/permissions/user/me');
-      if (res.statusCode == 200 && res.data is List) {
-        final List list = res.data as List;
-        final map = <String, int>{};
-        for (final item in list) {
-          if (item is Map && item['permission'] is String) {
-            final name = item['permission'] as String;
-            final lv = (item['level'] is num)
-                ? (item['level'] as num).toInt()
-                : 0;
-            map[name] = lv;
-          }
-        }
-        levels.assignAll(map);
+      final entries = await api.listMyPermissions();
+      final map = <String, int>{};
+      for (final e in entries) {
+        map[e.permission] = e.level;
       }
+      levels.assignAll(map);
     } catch (_) {
-      // 静默失败，不影响主流程
+      // 静默失败
     }
   }
 }

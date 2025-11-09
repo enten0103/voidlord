@@ -44,5 +44,6 @@ class AppPages {
     ),
   ];
 
-  static const initial = Routes.login;
+  static const login = Routes.login;
+  static const root = Routes.root;
 }

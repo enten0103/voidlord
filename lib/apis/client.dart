@@ -7,16 +7,15 @@ class Api {
   final Dio client;
 
   Api()
-      : client = Dio(
-          BaseOptions(
-            baseUrl: _resolveBaseUrl(),
-            connectTimeout: const Duration(seconds: 5),
-            receiveTimeout: const Duration(seconds: 10),
-            sendTimeout: const Duration(seconds: 10),
-            headers: const {'Content-Type': 'application/json'},
-          ),
-        ) {
-    // 保持与旧行为一致：全部状态码交给调用方判断
+    : client = Dio(
+        BaseOptions(
+          baseUrl: _resolveBaseUrl(),
+          connectTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 10),
+          headers: const {'Content-Type': 'application/json'},
+        ),
+      ) {
     client.options.validateStatus = (status) => true;
   }
 

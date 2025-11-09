@@ -22,25 +22,10 @@ class SettingsView extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('设置页面占位，可在此添加应用偏好、通知、隐私等配置。'),
+          const Text('个性化配置'),
           const SizedBox(height: 24),
           _appearanceSection(),
           const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text('示例分类', style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(height: 12),
-                  Text('· 外观设置（主题、字体大小）'),
-                  Text('· 通知偏好'),
-                  Text('· 隐私与安全'),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -93,18 +78,18 @@ Widget _appearanceSection() {
         children: [
           Text('外观', style: Get.textTheme.titleMedium),
           const SizedBox(height: 12),
-          Text('选择应用主题主色 (Seed Color)：', style: Get.textTheme.bodyMedium),
+          Text('选择应用主题主色：', style: Get.textTheme.bodyMedium),
           const SizedBox(height: 12),
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
-              for (final c in palette)
+              for (final color in palette)
                 Obx(
                   () => _colorOption(
-                    c,
-                    () => themeService.applySeed(c),
-                    selected: themeService.seed.value == c,
+                    color,
+                    () => themeService.applySeed(color),
+                    selected: themeService.seed.value == color,
                   ),
                 ),
               // 编辑按钮入口
@@ -273,7 +258,7 @@ Widget _fontSection(ThemeService service) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('字体 (桌面)', style: Get.textTheme.titleMedium),
+        Text('字体', style: Get.textTheme.titleMedium),
         const SizedBox(height: 8),
         Wrap(
           spacing: 12,

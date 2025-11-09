@@ -3,10 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'permission_service.dart';
 import '../apis/client.dart';
 import '../apis/auth_api.dart';
+import '../models/login_response.dart';
 
 class AuthService extends GetxService {
   final loggedIn = false.obs;
   final lastError = RxnString();
+  final userId = RxnInt();
   static const _kTokenKey = 'auth_token';
   String? _token;
 
@@ -20,6 +22,10 @@ class AuthService extends GetxService {
       _token = t;
       api.setBearerToken(_token);
       loggedIn.value = true;
+      // 恢复登录后立即尝试加载权限
+      if (Get.isRegistered<PermissionService>()) {
+        await Get.find<PermissionService>().load();
+      }
     }
     return this;
   }
@@ -27,7 +33,6 @@ class AuthService extends GetxService {
   Future<bool> login(String username, String password) async {
     lastError.value = null;
     if (Get.testMode) {
-      // 测试环境保持原行为以避免外部依赖
       if (username.isNotEmpty && password.isNotEmpty) {
         loggedIn.value = true;
         return true;
@@ -37,28 +42,32 @@ class AuthService extends GetxService {
     }
 
     try {
-      final data = await api.login(username: username, password: password);
-      if (data['access_token'] != null) {
-        // 设置 token 供后续请求复用，并持久化
-        _token = data['access_token'] as String;
+      final LoginResponse data = await api.login(
+        username: username,
+        password: password,
+      );
+      if (data.accessToken.isNotEmpty) {
+        _token = data.accessToken;
         api.setBearerToken(_token);
         try {
           final sp = await SharedPreferences.getInstance();
           await sp.setString(_kTokenKey, _token!);
         } catch (_) {}
-        // 登录后加载权限
         if (Get.isRegistered<PermissionService>()) {
           await Get.find<PermissionService>().load();
         }
         loggedIn.value = true;
+        userId.value = data.user.id;
         return true;
       }
       lastError.value = '登录失败';
       return false;
     } on AuthApiError catch (e) {
-      // 可以根据需要记录日志
       Get.log('AuthApiError: ${e.message}');
       lastError.value = e.message;
+      return false;
+    } catch (e) {
+      lastError.value = '未知错误';
       return false;
     }
   }

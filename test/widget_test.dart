@@ -10,12 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:voidlord/main.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/services/auth_service.dart';
+import 'package:voidlord/services/theme_service.dart';
 
 void main() {
   testWidgets('Login flow navigates to root', (WidgetTester tester) async {
     Get.testMode = true;
     // 测试环境需要手动注册全局服务
     Get.put<AuthService>(AuthService(), permanent: true);
+    await Get.put(ThemeService()).init();
     await tester.pumpWidget(const App());
 
     // 初始为登录页

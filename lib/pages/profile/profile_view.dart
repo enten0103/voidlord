@@ -77,7 +77,7 @@ class _ProfileViewState extends State<ProfileView> {
                     FilledButton.icon(
                       onPressed: () => Get.toNamed('/profile/edit'),
                       icon: const Icon(Icons.edit),
-                      label: const Text('编辑资料'),
+                      label: const Text('资料'),
                     ),
                     OutlinedButton.icon(
                       onPressed: () => Get.toNamed('/settings'),
@@ -91,7 +91,7 @@ class _ProfileViewState extends State<ProfileView> {
                         Get.offAllNamed('/login');
                       },
                       icon: const Icon(Icons.logout),
-                      label: const Text('退出登录'),
+                      label: const Text('登录'),
                     ),
                   ],
                 ),

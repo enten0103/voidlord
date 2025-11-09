@@ -148,11 +148,24 @@ Widget _editColorButton(ThemeService service) {
 }
 
 Future<void> _showRgbDialog(ThemeService service) async {
-  final rCtrl = TextEditingController(text: service.seed.value.red.toString());
-  final gCtrl = TextEditingController(
-    text: service.seed.value.green.toString(),
-  );
-  final bCtrl = TextEditingController(text: service.seed.value.blue.toString());
+  int rOf(Color c) {
+    final argb = c.toARGB32();
+    return (argb >> 16) & 0xFF;
+  }
+
+  int gOf(Color c) {
+    final argb = c.toARGB32();
+    return (argb >> 8) & 0xFF;
+  }
+
+  int bOf(Color c) {
+    final argb = c.toARGB32();
+    return argb & 0xFF;
+  }
+
+  final rCtrl = TextEditingController(text: rOf(service.seed.value).toString());
+  final gCtrl = TextEditingController(text: gOf(service.seed.value).toString());
+  final bCtrl = TextEditingController(text: bOf(service.seed.value).toString());
   Color preview = service.seed.value;
   await showDialog(
     context: Get.context!,
@@ -160,9 +173,9 @@ Future<void> _showRgbDialog(ThemeService service) async {
       return StatefulBuilder(
         builder: (context, setState) {
           void updatePreview() {
-            final r = int.tryParse(rCtrl.text) ?? preview.red;
-            final g = int.tryParse(gCtrl.text) ?? preview.green;
-            final b = int.tryParse(bCtrl.text) ?? preview.blue;
+            final r = int.tryParse(rCtrl.text) ?? rOf(preview);
+            final g = int.tryParse(gCtrl.text) ?? gOf(preview);
+            final b = int.tryParse(bCtrl.text) ?? bOf(preview);
             setState(
               () => preview = Color.fromARGB(
                 255,

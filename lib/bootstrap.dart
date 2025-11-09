@@ -6,6 +6,7 @@ import 'config/app_environment.dart';
 import 'services/auth_service.dart';
 import 'services/config_service.dart';
 import 'services/theme_service.dart';
+import 'services/permission_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,4 +48,11 @@ Future initDependencies() async {
   final themeService = ThemeService();
   await themeService.init();
   Get.put<ThemeService>(themeService, permanent: true);
+
+  final permService = PermissionService();
+  // 登录态如果已恢复则尝试加载权限
+  if (auth.loggedIn.value) {
+    await permService.load();
+  }
+  Get.put<PermissionService>(permService, permanent: true);
 }

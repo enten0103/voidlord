@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'permission_service.dart';
 import '../apis/client.dart';
 import '../apis/auth_api.dart';
 
@@ -45,6 +46,10 @@ class AuthService extends GetxService {
           final sp = await SharedPreferences.getInstance();
           await sp.setString(_kTokenKey, _token!);
         } catch (_) {}
+        // 登录后加载权限
+        if (Get.isRegistered<PermissionService>()) {
+          await Get.find<PermissionService>().load();
+        }
         loggedIn.value = true;
         return true;
       }

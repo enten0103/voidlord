@@ -57,7 +57,7 @@ class ThemeService extends GetxService {
   Future<void> applySeed(Color color) async {
     seed.value = color;
     final sp = await SharedPreferences.getInstance();
-    await sp.setInt(_kSeedKey, color.value);
+    await sp.setInt(_kSeedKey, color.toARGB32());
   }
 
   Future<void> setMode(ThemeMode m) async {

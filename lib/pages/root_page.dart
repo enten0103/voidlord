@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
+import 'package:voidlord/services/permission_service.dart';
+import 'upload/upload_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
 
 class RootController extends GetxController {
@@ -15,34 +17,44 @@ class RootPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(RootController());
-    final titles = ['广场', '搜索', '收藏', '我的'];
-    final pages = const [
-      _SquareTab(),
-      _SearchTab(),
-      _FavoritesTab(),
-      ProfileView(), // 展示型个人资料页面
-    ];
+    final perm = Get.find<PermissionService>();
     // 断点逻辑已抽取到 ResponsiveScaffold，可在调用处覆写
 
     return Obx(() {
       final i = controller.index.value;
+      final hasUpload = perm.hasBookUploadAccess.value;
+      final titles = ['广场', '搜索', '收藏', if (hasUpload) '上传', '我的'];
+      final pages = [
+        const _SquareTab(),
+        const _SearchTab(),
+        const _FavoritesTab(),
+        if (hasUpload) const UploadPage(),
+        const ProfileView(),
+      ];
+
       return ResponsiveScaffold(
         title: titles[i],
         actions: const [],
         pages: pages,
-        items: const [
-          NavItem(
+        items: [
+          const NavItem(
             icon: Icons.explore_outlined,
             selectedIcon: Icons.explore,
             label: '广场',
           ),
-          NavItem(icon: Icons.search, label: '搜索'),
-          NavItem(
+          const NavItem(icon: Icons.search, label: '搜索'),
+          const NavItem(
             icon: Icons.bookmark_outline,
             selectedIcon: Icons.bookmark,
             label: '收藏',
           ),
-          NavItem(
+          if (hasUpload)
+            const NavItem(
+              icon: Icons.cloud_upload_outlined,
+              selectedIcon: Icons.cloud_upload,
+              label: '上传',
+            ),
+          const NavItem(
             icon: Icons.person_outline,
             selectedIcon: Icons.person,
             label: '我的',

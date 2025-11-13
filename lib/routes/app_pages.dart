@@ -6,6 +6,8 @@ import '../pages/root_page.dart';
 import '../bindings/root_binding.dart';
 import '../pages/profile/profile_edit_view.dart';
 import '../pages/settings/settings_view.dart';
+import '../bindings/profile_edit_binding.dart';
+import '../bindings/settings_binding.dart';
 import '../services/auth_service.dart';
 import 'app_routes.dart';
 
@@ -37,11 +39,13 @@ class AppPages {
       name: Routes.profileEdit,
       page: () => const ProfileEditView(),
       middlewares: [AuthMiddleware()],
+      binding: ProfileEditBinding(),
     ),
     GetPage(
       name: Routes.settings,
       page: () => const SettingsView(),
       middlewares: [AuthMiddleware()],
+      binding: SettingsBinding(),
     ),
   ];
 

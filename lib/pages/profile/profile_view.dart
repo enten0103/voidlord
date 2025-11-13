@@ -102,10 +102,7 @@ class ProfileView extends GetView<ProfileController> {
                     _kv('界面主题', _themeLabel(controller.theme)),
                     _kv('语言', controller.locale),
                     _kv('时区', controller.timezone),
-                    _kv(
-                      '邮件通知',
-                      controller.emailNotifications ? '开启' : '关闭',
-                    ),
+                    _kv('邮件通知', controller.emailNotifications ? '开启' : '关闭'),
                   ],
                 ),
               ],

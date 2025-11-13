@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:get/get.dart';
+import 'settings_controller.dart';
 import '../../services/theme_service.dart';
 import 'package:system_fonts/system_fonts.dart' as sf;
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
 
   @override

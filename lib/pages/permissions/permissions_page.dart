@@ -42,7 +42,8 @@ class PermissionsPage extends GetView<PermissionsController> {
         ),
         floatingActionButton: controller.targetUserId.value != null
             ? FloatingActionButton.extended(
-                onPressed: controller.applying.value || !controller.hasChanges.value
+                onPressed:
+                    controller.applying.value || !controller.hasChanges.value
                     ? null
                     : controller.applyChanges,
                 icon: controller.applying.value

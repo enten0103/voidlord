@@ -82,7 +82,8 @@ class ProfileEditController extends GetxController {
     }
   }
 
-  String? _nonnull(String? s) => (s != null && s.trim().isNotEmpty) ? s.trim() : null;
+  String? _nonnull(String? s) =>
+      (s != null && s.trim().isNotEmpty) ? s.trim() : null;
 
   @override
   void onClose() {

@@ -5,7 +5,6 @@ import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
-import 'media_libraries/media_libraries_controller.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
 import 'package:voidlord/controllers/root_controller.dart';
 
@@ -30,7 +29,6 @@ class RootPage extends GetView<RootController> {
         '我的',
       ];
       // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
-      Get.lazyPut<MediaLibrariesController>(() => MediaLibrariesController(), fenix: true);
       final pages = [
         const _SquareTab(),
         const _SearchTab(),
@@ -110,4 +108,3 @@ class _SearchTab extends StatelessWidget {
     );
   }
 }
-

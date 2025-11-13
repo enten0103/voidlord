@@ -19,9 +19,17 @@ class MediaLibrariesController extends GetxController {
   RxBool get loading => service.loading;
   RxnString get error => service.error;
 
-  Future<void> createLibrary(String name,{String? description,bool isPublic=false}) async {
+  Future<void> createLibrary(
+    String name, {
+    String? description,
+    bool isPublic = false,
+  }) async {
     creating.value = true;
-    await service.createLibrary(name, description: description, isPublic: isPublic);
+    await service.createLibrary(
+      name,
+      description: description,
+      isPublic: isPublic,
+    );
     creating.value = false;
   }
 

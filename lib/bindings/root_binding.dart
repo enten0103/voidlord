@@ -12,6 +12,6 @@ class RootBinding extends Bindings {
     Get.lazyPut<UploadController>(() => UploadController());
     Get.lazyPut<PermissionsController>(() => PermissionsController());
     Get.lazyPut<ProfileController>(() => ProfileController());
-    Get.lazyPut<MediaLibrariesService>(() => MediaLibrariesService(), fenix: true);
+    Get.lazyPut<MediaLibrariesService>(() => MediaLibrariesService());
   }
 }

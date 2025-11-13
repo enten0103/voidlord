@@ -28,9 +28,21 @@ class MediaLibrariesService extends GetxService {
     }
   }
 
-  Future<void> createLibrary(String name, {String? description, bool isPublic = false, List<LibraryTagDto> tags = const []}) async {
+  Future<void> createLibrary(
+    String name, {
+    String? description,
+    bool isPublic = false,
+    List<LibraryTagDto> tags = const [],
+  }) async {
     try {
-      final created = await api.createLibrary(CreateLibraryRequest(name: name, description: description, isPublic: isPublic, tags: tags));
+      final created = await api.createLibrary(
+        CreateLibraryRequest(
+          name: name,
+          description: description,
+          isPublic: isPublic,
+          tags: tags,
+        ),
+      );
       myLibraries.insert(0, created);
       SideBanner.info('已创建媒体库');
     } catch (e) {

@@ -17,22 +17,31 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _sectionTitle(context, '固定媒体库'),
+            _sectionTitle(context, '媒体库'),
             const SizedBox(height: 8),
             _fixedLibraryCard(context, controller.readingRecord.value, '阅读记录库'),
-            _fixedLibraryCard(context, controller.virtualMyUploaded.value, '我的上传 (虚拟库)', virtual: true),
+            _fixedLibraryCard(
+              context,
+              controller.virtualMyUploaded.value,
+              '我的上传',
+              virtual: true,
+            ),
             const SizedBox(height: 24),
-            _sectionTitle(context, '我的媒体库'),
+            _sectionTitle(context, '收藏书单'),
             const SizedBox(height: 8),
             if (controller.myLibraries.isEmpty)
-              Text('暂无自定义媒体库', style: Theme.of(context).textTheme.bodySmall)
+              Text('暂无书单', style: Theme.of(context).textTheme.bodySmall)
             else
-              ...controller.myLibraries.map((lib) => _libraryCard(context, lib)),
+              ...controller.myLibraries.map(
+                (lib) => _libraryCard(context, lib),
+              ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: controller.creating.value ? null : () => _showCreateDialog(context),
+              onPressed: controller.creating.value
+                  ? null
+                  : () => _showCreateDialog(context),
               icon: const Icon(Icons.add_box),
-              label: Text(controller.creating.value ? '创建中...' : '新建媒体库'),
+              label: Text(controller.creating.value ? '创建中...' : '新建书单'),
             ),
           ],
         ),
@@ -40,15 +49,18 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
     });
   }
 
-  Widget _sectionTitle(BuildContext context, String title) => Text(title, style: Theme.of(context).textTheme.titleMedium);
+  Widget _sectionTitle(BuildContext context, String title) =>
+      Text(title, style: Theme.of(context).textTheme.titleMedium);
 
-  Widget _fixedLibraryCard(BuildContext context, MediaLibraryDto? lib, String label,{bool virtual=false}) {
+  Widget _fixedLibraryCard(
+    BuildContext context,
+    MediaLibraryDto? lib,
+    String label, {
+    bool virtual = false,
+  }) {
     if (lib == null) {
       return Card(
-        child: ListTile(
-          title: Text(label),
-          subtitle: const Text('加载中或不可用'),
-        ),
+        child: ListTile(title: Text(label), subtitle: const Text('加载中或不可用')),
       );
     }
     return Card(
@@ -107,7 +119,8 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
               TextFormField(
                 controller: nameCtrl,
                 decoration: const InputDecoration(labelText: '名称'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? '请输入名称' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? '请输入名称' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -127,17 +140,32 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx,false), child: const Text('取消')),
-          FilledButton(onPressed: () { if(formKey.currentState!.validate()) Navigator.pop(ctx,true); }, child: const Text('创建')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) Navigator.pop(ctx, true);
+            },
+            child: const Text('创建'),
+          ),
         ],
       ),
     );
     if (ok == true) {
-      await controller.createLibrary(nameCtrl.text.trim(), description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(), isPublic: isPublic);
+      await controller.createLibrary(
+        nameCtrl.text.trim(),
+        description: descCtrl.text.trim().isEmpty ? null : descCtrl.text.trim(),
+        isPublic: isPublic,
+      );
     }
   }
 
-  Future<void> _showEditDialog(BuildContext context, MediaLibraryDto lib) async {
+  Future<void> _showEditDialog(
+    BuildContext context,
+    MediaLibraryDto lib,
+  ) async {
     final nameCtrl = TextEditingController(text: lib.name);
     final descCtrl = TextEditingController(text: lib.description ?? '');
     bool isPublic = lib.isPublic;
@@ -148,33 +176,56 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: '名称')),
+            TextField(
+              controller: nameCtrl,
+              decoration: const InputDecoration(labelText: '名称'),
+            ),
             const SizedBox(height: 12),
-            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: '描述')),
+            TextField(
+              controller: descCtrl,
+              decoration: const InputDecoration(labelText: '描述'),
+            ),
             const SizedBox(height: 12),
             StatefulBuilder(
               builder: (context, setState) => CheckboxListTile(
                 value: isPublic,
-                onChanged: lib.isSystem ? null : (v) => setState(() => isPublic = v ?? false),
+                onChanged: lib.isSystem
+                    ? null
+                    : (v) => setState(() => isPublic = v ?? false),
                 title: const Text('公开媒体库'),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
             ),
-            if (lib.isSystem) const Text('系统库部分属性已锁定', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            if (lib.isSystem)
+              const Text(
+                '系统库部分属性已锁定',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx,false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx,true), child: const Text('保存')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('保存'),
+          ),
         ],
       ),
     );
     if (ok == true) {
-      await controller.service.updateLibrary(lib.id, UpdateLibraryRequest(
-        name: nameCtrl.text.trim() == lib.name ? null : nameCtrl.text.trim(),
-        description: descCtrl.text.trim() == (lib.description ?? '') ? null : descCtrl.text.trim(),
-        isPublic: isPublic == lib.isPublic ? null : isPublic,
-      ));
+      await controller.service.updateLibrary(
+        lib.id,
+        UpdateLibraryRequest(
+          name: nameCtrl.text.trim() == lib.name ? null : nameCtrl.text.trim(),
+          description: descCtrl.text.trim() == (lib.description ?? '')
+              ? null
+              : descCtrl.text.trim(),
+          isPublic: isPublic == lib.isPublic ? null : isPublic,
+        ),
+      );
     }
   }
 
@@ -186,8 +237,14 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
         title: Text('删除媒体库 "${lib.name}"?'),
         content: const Text('此操作不可撤销，将删除媒体库及其条目。'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx,false), child: const Text('取消')),
-          FilledButton(onPressed: () => Navigator.pop(ctx,true), child: const Text('确认删除')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('确认删除'),
+          ),
         ],
       ),
     );
@@ -211,10 +268,16 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
                 children: [
                   Text(lib.name, style: Theme.of(context).textTheme.titleLarge),
                   const Spacer(),
-                  IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close),
+                  ),
                 ],
               ),
-              Text('${lib.itemsCount} 条目', style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                '${lib.itemsCount} 条目',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               const SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
@@ -223,8 +286,14 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
                   itemBuilder: (context, i) {
                     final item = lib.items[i];
                     return ListTile(
-                      title: Text(item.book != null ? '书籍 #${item.book!.id}' : '子库 #${item.childLibrary!.id}'),
-                      subtitle: item.childLibrary?.name != null ? Text(item.childLibrary!.name!) : null,
+                      title: Text(
+                        item.book != null
+                            ? '书籍 #${item.book!.id}'
+                            : '子库 #${item.childLibrary!.id}',
+                      ),
+                      subtitle: item.childLibrary?.name != null
+                          ? Text(item.childLibrary!.name!)
+                          : null,
                     );
                   },
                 ),

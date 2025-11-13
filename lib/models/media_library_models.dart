@@ -29,27 +29,40 @@ class MediaLibraryDto {
     this.updatedAt,
   });
 
-  factory MediaLibraryDto.fromJson(Map<String,dynamic> json) => MediaLibraryDto(
-    id: (json['id'] as num).toInt(),
-    name: json['name'] as String,
-    description: json['description'] as String?,
-    isPublic: json['is_public'] == true,
-    isSystem: json['is_system'] == true,
-    isVirtual: json['is_virtual'] == true,
-    ownerId: json['owner_id'] == null ? null : (json['owner_id'] as num).toInt(),
-    itemsCount: (json['items_count'] ?? 0) is num ? (json['items_count'] as num).toInt() : 0,
-    items: (json['items'] as List? ?? [])
-      .whereType<Map>()
-      .map((e) => MediaLibraryItemDto.fromJson(Map<String,dynamic>.from(e)))
-      .toList(),
-    tags: (json['tags'] as List? ?? [])
-      .whereType<Map>()
-      .map((e) => LibraryTagDto.fromJson(Map<String,dynamic>.from(e)))
-      .toList(),
-    copiedFrom: json['copied_from'] == null ? null : (json['copied_from'] as num).toInt(),
-    createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-    updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
-  );
+  factory MediaLibraryDto.fromJson(Map<String, dynamic> json) =>
+      MediaLibraryDto(
+        id: (json['id'] as num).toInt(),
+        name: json['name'] as String,
+        description: json['description'] as String?,
+        isPublic: json['is_public'] == true,
+        isSystem: json['is_system'] == true,
+        isVirtual: json['is_virtual'] == true,
+        ownerId: json['owner_id'] == null
+            ? null
+            : (json['owner_id'] as num).toInt(),
+        itemsCount: (json['items_count'] ?? 0) is num
+            ? (json['items_count'] as num).toInt()
+            : 0,
+        items: (json['items'] as List? ?? [])
+            .whereType<Map>()
+            .map(
+              (e) => MediaLibraryItemDto.fromJson(Map<String, dynamic>.from(e)),
+            )
+            .toList(),
+        tags: (json['tags'] as List? ?? [])
+            .whereType<Map>()
+            .map((e) => LibraryTagDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList(),
+        copiedFrom: json['copied_from'] == null
+            ? null
+            : (json['copied_from'] as num).toInt(),
+        createdAt: json['created_at'] != null
+            ? DateTime.tryParse(json['created_at'].toString())
+            : null,
+        updatedAt: json['updated_at'] != null
+            ? DateTime.tryParse(json['updated_at'].toString())
+            : null,
+      );
 }
 
 class MediaLibraryItemDto {
@@ -57,26 +70,44 @@ class MediaLibraryItemDto {
   final SimpleBookRef? book;
   final ChildLibraryRef? childLibrary;
 
-  MediaLibraryItemDto({required this.id, required this.book, required this.childLibrary});
+  MediaLibraryItemDto({
+    required this.id,
+    required this.book,
+    required this.childLibrary,
+  });
 
-  factory MediaLibraryItemDto.fromJson(Map<String,dynamic> json) => MediaLibraryItemDto(
-    id: (json['id'] as num).toInt(),
-    book: json['book'] == null ? null : SimpleBookRef.fromJson(Map<String,dynamic>.from(json['book'] as Map)),
-    childLibrary: json['child_library'] == null ? null : ChildLibraryRef.fromJson(Map<String,dynamic>.from(json['child_library'] as Map)),
-  );
+  factory MediaLibraryItemDto.fromJson(Map<String, dynamic> json) =>
+      MediaLibraryItemDto(
+        id: (json['id'] as num).toInt(),
+        book: json['book'] == null
+            ? null
+            : SimpleBookRef.fromJson(
+                Map<String, dynamic>.from(json['book'] as Map),
+              ),
+        childLibrary: json['child_library'] == null
+            ? null
+            : ChildLibraryRef.fromJson(
+                Map<String, dynamic>.from(json['child_library'] as Map),
+              ),
+      );
 }
 
 class SimpleBookRef {
   final int id;
   SimpleBookRef({required this.id});
-  factory SimpleBookRef.fromJson(Map<String,dynamic> json) => SimpleBookRef(id: (json['id'] as num).toInt());
+  factory SimpleBookRef.fromJson(Map<String, dynamic> json) =>
+      SimpleBookRef(id: (json['id'] as num).toInt());
 }
 
 class ChildLibraryRef {
   final int id;
   final String? name;
   ChildLibraryRef({required this.id, this.name});
-  factory ChildLibraryRef.fromJson(Map<String,dynamic> json) => ChildLibraryRef(id: (json['id'] as num).toInt(), name: json['name'] as String?);
+  factory ChildLibraryRef.fromJson(Map<String, dynamic> json) =>
+      ChildLibraryRef(
+        id: (json['id'] as num).toInt(),
+        name: json['name'] as String?,
+      );
 }
 
 class LibraryTagDto {
@@ -84,12 +115,12 @@ class LibraryTagDto {
   final String value;
   final bool shown;
   LibraryTagDto({required this.key, required this.value, required this.shown});
-  factory LibraryTagDto.fromJson(Map<String,dynamic> json) => LibraryTagDto(
+  factory LibraryTagDto.fromJson(Map<String, dynamic> json) => LibraryTagDto(
     key: json['key'] as String,
     value: json['value'] as String,
     shown: json['shown'] == true,
   );
-  Map<String,dynamic> toJson() => {'key': key, 'value': value, 'shown': shown};
+  Map<String, dynamic> toJson() => {'key': key, 'value': value, 'shown': shown};
 }
 
 class CreateLibraryRequest {
@@ -97,13 +128,18 @@ class CreateLibraryRequest {
   final String? description;
   final bool isPublic;
   final List<LibraryTagDto> tags;
-  CreateLibraryRequest({required this.name, this.description, required this.isPublic, required this.tags});
-  Map<String,dynamic> toJson() => {
+  CreateLibraryRequest({
+    required this.name,
+    this.description,
+    required this.isPublic,
+    required this.tags,
+  });
+  Map<String, dynamic> toJson() => {
     'name': name,
     'description': description,
     'is_public': isPublic,
     'tags': tags.map((e) => e.toJson()).toList(),
-  }..removeWhere((k,v) => v == null);
+  }..removeWhere((k, v) => v == null);
 }
 
 class UpdateLibraryRequest {
@@ -112,7 +148,7 @@ class UpdateLibraryRequest {
   final bool? isPublic;
   final List<LibraryTagDto>? tags; // 覆盖策略
   UpdateLibraryRequest({this.name, this.description, this.isPublic, this.tags});
-  Map<String,dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
     if (name != null) 'name': name,
     if (description != null) 'description': description,
     if (isPublic != null) 'is_public': isPublic,

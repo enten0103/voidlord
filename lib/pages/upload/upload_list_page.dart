@@ -10,6 +10,11 @@ class UploadListPage extends GetView<UploadListController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        tooltip: '新建图书',
+        onPressed: () => Get.toNamed(Routes.uploadEdit),
+        child: const Icon(Icons.add),
+      ),
       body: Obx(() {
         if (controller.loading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -29,35 +34,44 @@ class UploadListPage extends GetView<UploadListController> {
             ),
           );
         }
-        if (controller.books.isEmpty) {
-          return Center(
-            child: Text(
-              '暂无上传的图书，点击右上角 + 进行创建',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          );
-        }
         return RefreshIndicator(
           onRefresh: controller.load,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // 自适应网格：使用最大单项宽度实现列数动态扩展
-              return GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 180, // 宽屏时自动增加列数
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.56, // 稍增高度避免文本溢出
+          child: controller.books.isEmpty
+              ? ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(24),
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.3,
+                    ),
+                    Center(
+                      child: Text(
+                        '暂无上传的图书，点击右下角 + 进行创建',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                )
+              : LayoutBuilder(
+                  builder: (context, constraints) {
+                    return GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 180, // 宽屏时自动增加列数
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.56, // 稍增高度避免文本溢出
+                      ),
+                      itemCount: controller.books.length,
+                      itemBuilder: (context, index) {
+                        final b = controller.books[index];
+                        return _bookTile(context, b);
+                      },
+                    );
+                  },
                 ),
-                itemCount: controller.books.length,
-                itemBuilder: (context, index) {
-                  final b = controller.books[index];
-                  return _bookTile(context, b);
-                },
-              );
-            },
-          ),
         );
       }),
     );

@@ -15,7 +15,6 @@ class UploadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<UploadController>(
-      init: UploadController(),
       builder: (controller) => Align(
         alignment: Alignment.topCenter,
         child: SingleChildScrollView(

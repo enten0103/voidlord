@@ -10,7 +10,6 @@ class ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Get.theme.textTheme;
     return GetBuilder<ProfileController>(
-      init: ProfileController(),
       builder: (controller) {
         return Obx(() {
           if (controller.loading.value) {

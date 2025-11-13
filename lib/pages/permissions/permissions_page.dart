@@ -21,7 +21,6 @@ class PermissionsPage extends StatelessWidget {
       );
     }
     return GetBuilder<PermissionsController>(
-      init: PermissionsController(),
       autoRemove: false,
       builder: (c) => Obx(() {
         return Scaffold(

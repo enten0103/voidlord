@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../pages/login_page.dart';
 import '../pages/root_page.dart';
+import '../bindings/root_binding.dart';
 import '../pages/profile/profile_edit_view.dart';
 import '../pages/settings/settings_view.dart';
 import '../services/auth_service.dart';
@@ -31,6 +32,7 @@ class AppPages {
       name: Routes.root,
       page: () => const RootPage(),
       middlewares: [AuthMiddleware()],
+      binding: RootBinding(),
     ),
     GetPage(
       name: Routes.profileEdit,

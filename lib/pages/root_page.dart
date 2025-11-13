@@ -5,19 +5,14 @@ import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_page.dart';
 import 'permissions/permissions_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
-
-class RootController extends GetxController {
-  final index = 0.obs;
-
-  void switchTab(int i) => index.value = i;
-}
+import 'package:voidlord/controllers/root_controller.dart';
 
 class RootPage extends StatelessWidget {
   const RootPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(RootController());
+  final controller = Get.find<RootController>();
     final perm = Get.find<PermissionService>();
     // 断点逻辑已抽取到 ResponsiveScaffold，可在调用处覆写
 

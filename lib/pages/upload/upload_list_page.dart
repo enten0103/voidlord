@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
 import '../../models/book_models.dart';
@@ -10,11 +11,31 @@ class UploadListPage extends GetView<UploadListController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        tooltip: '新建图书',
-        onPressed: () => Get.toNamed(Routes.uploadEdit),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: Platform.isWindows
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'refreshFab',
+                  tooltip: '刷新',
+                  onPressed: controller.load,
+                  child: const Icon(Icons.refresh),
+                ),
+                const SizedBox(height: 12),
+                FloatingActionButton(
+                  heroTag: 'addFab',
+                  tooltip: '新建图书',
+                  onPressed: () => Get.toNamed(Routes.uploadEdit),
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            )
+          : FloatingActionButton(
+              tooltip: '新建图书',
+              onPressed: () => Get.toNamed(Routes.uploadEdit),
+              child: const Icon(Icons.add),
+            ),
       body: Obx(() {
         if (controller.loading.value) {
           return const Center(child: CircularProgressIndicator());
@@ -41,9 +62,7 @@ class UploadListPage extends GetView<UploadListController> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(24),
                   children: [
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.3,
-                    ),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.3),
                     Center(
                       child: Text(
                         '暂无上传的图书，点击右下角 + 进行创建',
@@ -59,11 +78,11 @@ class UploadListPage extends GetView<UploadListController> {
                       padding: const EdgeInsets.all(12),
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 180, // 宽屏时自动增加列数
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        childAspectRatio: 0.56, // 稍增高度避免文本溢出
-                      ),
+                            maxCrossAxisExtent: 180, // 宽屏时自动增加列数
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.56, // 稍增高度避免文本溢出
+                          ),
                       itemCount: controller.books.length,
                       itemBuilder: (context, index) {
                         final b = controller.books[index];

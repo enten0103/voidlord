@@ -22,6 +22,10 @@ class UploadController extends GetxController {
 
   Api get api => Get.find<Api>();
 
+  int? editingBookId; // 若存在则处于编辑模式
+  final editing = false.obs;
+  final initialLoading = false.obs;
+
   void addTagRow() => tagFields.add(_TagField());
   void removeTagRow(int index) {
     if (index < 0 || index >= tagFields.length) return;
@@ -94,7 +98,7 @@ class UploadController extends GetxController {
     }
   }
 
-  Future<void> createBook() async {
+  Future<void> createOrUpdateBook() async {
     final tags = <TagInput>[];
     for (final f in tagFields) {
       final k = f.keyController.text.trim();
@@ -111,16 +115,69 @@ class UploadController extends GetxController {
 
     creatingBook.value = true;
     try {
-      final created = await api.createBook(CreateBookRequest(tags: tags));
-      SideBanner.info('创建成功：#${created.id}');
-      for (final f in tagFields) {
-        f.keyController.clear();
-        f.valueController.clear();
+      if (editing.value && editingBookId != null) {
+        final updated = await api.updateBook(
+          editingBookId!,
+          UpdateBookRequest(tags: tags),
+        );
+        SideBanner.info('更新成功：#${updated.id}');
+      } else {
+        final created = await api.createBook(CreateBookRequest(tags: tags));
+        SideBanner.info('创建成功：#${created.id}');
+        for (final f in tagFields) {
+          f.keyController.clear();
+          f.valueController.clear();
+        }
       }
     } catch (e) {
-      SideBanner.danger('创建失败');
+      SideBanner.danger(editing.value ? '更新失败' : '创建失败');
     } finally {
       creatingBook.value = false;
+    }
+  }
+
+  Future<void> loadExisting(int id) async {
+    editingBookId = id;
+    editing.value = true;
+    initialLoading.value = true;
+    try {
+      final book = await api.getBook(id);
+      // 清理现有
+      for (final f in tagFields) {
+        f.dispose();
+      }
+      tagFields.clear();
+      for (final t in book.tags) {
+        final f = _TagField();
+        f.keyController.text = t.key;
+        f.valueController.text = t.value;
+        // 从后端加载标签显示状态
+        f.shown.value = t.shown;
+        tagFields.add(f);
+      }
+    } catch (e) {
+      SideBanner.danger('加载图书失败');
+    } finally {
+      initialLoading.value = false;
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    int? id;
+    final paramId = Get.parameters['id'];
+    if (paramId != null) {
+      id = int.tryParse(paramId);
+    }
+    if (id == null && Get.arguments is int) {
+      id = Get.arguments as int;
+    } else if (id == null && Get.arguments is Map) {
+      final args = Get.arguments as Map;
+      if (args['id'] is int) id = args['id'] as int;
+    }
+    if (id != null) {
+      loadExisting(id);
     }
   }
 

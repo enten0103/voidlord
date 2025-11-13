@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
-import 'upload/upload_page.dart';
+import 'upload/upload_list_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
@@ -33,7 +33,7 @@ class RootPage extends GetView<RootController> {
         const _SquareTab(),
         const _SearchTab(),
         const MediaLibrariesPage(),
-        if (hasUpload) const UploadPage(),
+        if (hasUpload) const UploadListPage(),
         if (hasPermMgmt) const PermissionsPage(),
         const ProfileView(),
       ];

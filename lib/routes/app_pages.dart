@@ -9,6 +9,11 @@ import '../pages/settings/settings_view.dart';
 import '../bindings/profile_edit_binding.dart';
 import '../bindings/settings_binding.dart';
 import '../services/auth_service.dart';
+import '../pages/media_libraries/media_library_detail_page.dart';
+import '../pages/upload/upload_page.dart';
+import '../pages/upload/upload_list_page.dart';
+import '../bindings/media_library_detail_binding.dart';
+import '../bindings/upload_binding.dart';
 import 'app_routes.dart';
 
 class AuthMiddleware extends GetMiddleware {
@@ -46,6 +51,23 @@ class AppPages {
       page: () => const SettingsView(),
       middlewares: [AuthMiddleware()],
       binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: Routes.mediaLibraryDetail,
+      page: () => const MediaLibraryDetailPage(),
+      middlewares: [AuthMiddleware()],
+      binding: MediaLibraryDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.uploadList,
+      page: () => const UploadListPage(),
+      middlewares: [AuthMiddleware()],
+    ),
+    GetPage(
+      name: Routes.uploadEdit,
+      page: () => const UploadPage(),
+      middlewares: [AuthMiddleware()],
+      binding: UploadBinding(),
     ),
   ];
 

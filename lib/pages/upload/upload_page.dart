@@ -14,64 +14,100 @@ class UploadPage extends GetView<UploadController> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('图书上传', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 12),
-              Text(
-                '流程：1) 上传媒体获取 key  2) 添加标签 (封面=COVER) 创建图书',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = constraints.maxWidth >= 800;
-                  if (wide) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _mediaCard(context, controller)),
-                        const SizedBox(width: 24),
-                        Expanded(child: _tagsCard(context, controller)),
-                      ],
-                    );
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Get.back(),
+        ),
+        title: Obx(
+          () => Text(
+            controller.editing.value
+                ? '编辑图书 #${controller.editingBookId}'
+                : '图书上传',
+          ),
+        ),
+        actions: [
+          if (controller.editing.value)
+            IconButton(
+              tooltip: '重新加载',
+              onPressed: () {
+                final id = controller.editingBookId;
+                if (id != null) controller.loadExisting(id);
+              },
+              icon: const Icon(Icons.refresh),
+            ),
+        ],
+      ),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Obx(() {
+                  if (controller.initialLoading.value) {
+                    return const LinearProgressIndicator(minHeight: 4);
                   }
-                  return DefaultTabController(
-                    length: 2,
-                    child: Column(
-                      children: [
-                        const TabBar(
-                          tabs: [
-                            Tab(text: '媒体文件'),
-                            Tab(text: '标签与创建'),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 720,
-                          child: TabBarView(
-                            children: [
-                              SingleChildScrollView(
-                                child: _mediaCard(context, controller),
-                              ),
-                              SingleChildScrollView(
-                                child: _tagsCard(context, controller),
-                              ),
+                  return const SizedBox.shrink();
+                }),
+                const SizedBox(height: 12),
+                Obx(
+                  () => Text(
+                    controller.editing.value
+                        ? '可修改标签并提交更新（封面=COVER）'
+                        : '流程：1) 上传媒体获取 key  2) 添加标签 (封面=COVER) 创建图书',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final wide = constraints.maxWidth >= 800;
+                    if (wide) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _mediaCard(context, controller)),
+                          const SizedBox(width: 24),
+                          Expanded(child: _tagsCard(context, controller)),
+                        ],
+                      );
+                    }
+                    return DefaultTabController(
+                      length: 2,
+                      child: Column(
+                        children: [
+                          const TabBar(
+                            tabs: [
+                              Tab(text: '媒体文件'),
+                              Tab(text: '标签与创建'),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
+                          SizedBox(
+                            height: 720,
+                            child: TabBarView(
+                              children: [
+                                SingleChildScrollView(
+                                  child: _mediaCard(context, controller),
+                                ),
+                                SingleChildScrollView(
+                                  child: _tagsCard(context, controller),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -209,10 +245,16 @@ class UploadPage extends GetView<UploadController> {
               for (int i = 0; i < c.tagFields.length; i++)
                 _tagRow(context, i, c),
               const Divider(height: 32),
-              FilledButton.icon(
-                onPressed: c.creatingBook.value ? null : c.createBook,
-                icon: const Icon(Icons.library_add),
-                label: Text(c.creatingBook.value ? '创建中...' : '创建图书'),
+              Obx(
+                () => FilledButton.icon(
+                  onPressed: c.creatingBook.value ? null : c.createOrUpdateBook,
+                  icon: Icon(c.editing.value ? Icons.save : Icons.library_add),
+                  label: Text(
+                    c.creatingBook.value
+                        ? (c.editing.value ? '更新中...' : '创建中...')
+                        : (c.editing.value ? '保存修改' : '创建图书'),
+                  ),
+                ),
               ),
             ],
           ),

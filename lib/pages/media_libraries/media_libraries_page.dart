@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'media_libraries_controller.dart';
 import '../../models/media_library_models.dart';
+import '../../routes/app_routes.dart';
 
 class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   const MediaLibrariesPage({super.key});
@@ -20,12 +21,6 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
             _sectionTitle(context, '媒体库'),
             const SizedBox(height: 8),
             _fixedLibraryCard(context, controller.readingRecord.value, '阅读记录库'),
-            _fixedLibraryCard(
-              context,
-              controller.virtualMyUploaded.value,
-              '我的上传',
-              virtual: true,
-            ),
             const SizedBox(height: 24),
             _sectionTitle(context, '收藏书单'),
             const SizedBox(height: 8),
@@ -254,54 +249,7 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   }
 
   void _openLibraryDetail(BuildContext context, MediaLibraryDto lib) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        builder: (ctx, scroll) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(lib.name, style: Theme.of(context).textTheme.titleLarge),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              Text(
-                '${lib.itemsCount} 条目',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ListView.builder(
-                  controller: scroll,
-                  itemCount: lib.items.length,
-                  itemBuilder: (context, i) {
-                    final item = lib.items[i];
-                    return ListTile(
-                      title: Text(
-                        item.book != null
-                            ? '书籍 #${item.book!.id}'
-                            : '子库 #${item.childLibrary!.id}',
-                      ),
-                      subtitle: item.childLibrary?.name != null
-                          ? Text(item.childLibrary!.name!)
-                          : null,
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    // 跳转到新的详情路由页面（网格展示）
+    Get.toNamed('${Routes.mediaLibraryDetail}/${lib.id}', arguments: lib.id);
   }
 }

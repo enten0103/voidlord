@@ -7,7 +7,7 @@ import 'package:voidlord/widgets/side_baner.dart';
 
 // 新的批量权限编辑控制器
 
-class PermissionsPage extends StatelessWidget {
+class PermissionsPage extends GetView<PermissionsController> {
   const PermissionsPage({super.key});
 
   @override
@@ -20,51 +20,49 @@ class PermissionsPage extends StatelessWidget {
         ),
       );
     }
-    return GetBuilder<PermissionsController>(
-      autoRemove: false,
-      builder: (c) => Obx(() {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              // 使用 stretch 让子组件（Card 等）占满可用宽度，保证等宽
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('权限管理', style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 12),
-                _myPermissionsCard(context, c),
-                const SizedBox(height: 20),
-                _targetUserInputCard(context, c),
-                const SizedBox(height: 20),
-                if (c.targetUserId.value != null) _batchEditorCard(context, c),
-              ],
-            ),
+    return Obx(() {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            // 使用 stretch 让子组件（Card 等）占满可用宽度，保证等宽
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('权限管理', style: Theme.of(context).textTheme.headlineMedium),
+              const SizedBox(height: 12),
+              _myPermissionsCard(context, controller),
+              const SizedBox(height: 20),
+              _targetUserInputCard(context, controller),
+              const SizedBox(height: 20),
+              if (controller.targetUserId.value != null)
+                _batchEditorCard(context, controller),
+            ],
           ),
-          floatingActionButton: c.targetUserId.value != null
-              ? FloatingActionButton.extended(
-                  onPressed: c.applying.value || !c.hasChanges.value
-                      ? null
-                      : c.applyChanges,
-                  icon: c.applying.value
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(
-                    c.applying.value
-                        ? '提交中...'
-                        : c.hasChanges.value
-                        ? '提交变更'
-                        : '无变更',
-                  ),
-                )
-              : null,
-        );
-      }),
-    );
+        ),
+        floatingActionButton: controller.targetUserId.value != null
+            ? FloatingActionButton.extended(
+                onPressed: controller.applying.value || !controller.hasChanges.value
+                    ? null
+                    : controller.applyChanges,
+                icon: controller.applying.value
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.save),
+                label: Text(
+                  controller.applying.value
+                      ? '提交中...'
+                      : controller.hasChanges.value
+                      ? '提交变更'
+                      : '无变更',
+                ),
+              )
+            : null,
+      );
+    });
   }
 
   Widget _myPermissionsCard(BuildContext context, PermissionsController c) {

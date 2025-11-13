@@ -7,12 +7,11 @@ import 'permissions/permissions_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
 import 'package:voidlord/controllers/root_controller.dart';
 
-class RootPage extends StatelessWidget {
+class RootPage extends GetView<RootController> {
   const RootPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-  final controller = Get.find<RootController>();
     final perm = Get.find<PermissionService>();
     // 断点逻辑已抽取到 ResponsiveScaffold，可在调用处覆写
 

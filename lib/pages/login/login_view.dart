@@ -31,7 +31,9 @@ class LoginView extends GetView<LoginController> {
                       children: [
                         CircleAvatar(
                           radius: 20,
-                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
                           child: const Text(
                             'V',
                             style: TextStyle(
@@ -53,8 +55,8 @@ class LoginView extends GetView<LoginController> {
                       '请使用账号密码登录',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     TextField(
@@ -95,8 +97,9 @@ class LoginView extends GetView<LoginController> {
                         width: double.infinity,
                         child: ElevatedButton(
                           key: const Key('loginButton'),
-                          onPressed:
-                              controller.loading.value ? null : controller.submit,
+                          onPressed: controller.loading.value
+                              ? null
+                              : controller.submit,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -107,7 +110,9 @@ class LoginView extends GetView<LoginController> {
                               ? const SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text('立即登录'),
                         ),

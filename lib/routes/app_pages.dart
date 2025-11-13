@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../pages/login_page.dart';
+import '../pages/login/login_view.dart';
+import '../bindings/login_binding.dart';
 import '../pages/root_page.dart';
 import '../bindings/root_binding.dart';
 import '../pages/profile/profile_edit_view.dart';
@@ -23,10 +24,8 @@ class AppPages {
   static final pages = <GetPage<dynamic>>[
     GetPage(
       name: Routes.login,
-      page: () => const LoginPage(),
-      binding: BindingsBuilder(() {
-        // 在进入 login 路由时注入 LoginController
-      }),
+      page: () => const LoginView(),
+      binding: LoginBinding(),
     ),
     GetPage(
       name: Routes.root,

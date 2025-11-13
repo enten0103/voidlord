@@ -100,7 +100,7 @@ class UploadController extends GetxController {
       final k = f.keyController.text.trim();
       final v = f.valueController.text.trim();
       if (k.isEmpty || v.isEmpty) continue;
-      tags.add(TagInput(key: k, value: v));
+      tags.add(TagInput(key: k, value: v, shown: f.shown.value));
     }
     if (tags.isEmpty) {
       SideBanner.warning('请至少添加一个标签');
@@ -137,8 +137,10 @@ class UploadController extends GetxController {
 class _TagField {
   final TextEditingController keyController = TextEditingController();
   final TextEditingController valueController = TextEditingController();
+  final RxBool shown = true.obs; // 默认显示
   void dispose() {
     keyController.dispose();
     valueController.dispose();
+    shown.close();
   }
 }

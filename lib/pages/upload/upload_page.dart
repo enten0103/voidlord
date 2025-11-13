@@ -206,7 +206,7 @@ class UploadPage extends GetView<UploadController> {
                   '提示：封面标签=COVER；示例：AUTHOR=刘慈欣、GENRE=科幻',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
-              for (int i = 0; i < c.tagFields.length; i++) _tagRow(i, c),
+              for (int i = 0; i < c.tagFields.length; i++) _tagRow(context, i, c),
               const Divider(height: 32),
               FilledButton.icon(
                 onPressed: c.creatingBook.value ? null : c.createBook,
@@ -220,7 +220,7 @@ class UploadPage extends GetView<UploadController> {
     );
   }
 
-  Widget _tagRow(int index, UploadController c) {
+  Widget _tagRow(BuildContext context, int index, UploadController c) {
     final f = c.tagFields[index];
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -249,6 +249,23 @@ class UploadPage extends GetView<UploadController> {
               ),
             ),
           ),
+          const SizedBox(width: 12),
+          // shown 开关
+          Obx(() => Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Switch(
+                    value: f.shown.value,
+                    onChanged: c.creatingBook.value
+                        ? null
+                        : (v) => f.shown.value = v,
+                  ),
+                  Text(
+                    f.shown.value ? '显示' : '隐藏',
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
+              )),
           const SizedBox(width: 8),
           IconButton(
             tooltip: '删除',

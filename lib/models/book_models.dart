@@ -41,8 +41,13 @@ class TagDto {
 class TagInput {
   final String key;
   final String value;
-  TagInput({required this.key, required this.value});
-  Map<String, dynamic> toJson() => {'key': key, 'value': value};
+  final bool shown;
+  TagInput({required this.key, required this.value, this.shown = true});
+  Map<String, dynamic> toJson() => {
+    'key': key,
+    'value': value,
+    'shown': shown,
+  };
 }
 
 class BookDto {

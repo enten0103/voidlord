@@ -120,11 +120,7 @@ class ProfileEditView extends GetView<ProfileEditController> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              _textField(
-                '展示名',
-                controller.displayNameCtrl,
-                hint: '例如：Alice',
-              ),
+              _textField('展示名', controller.displayNameCtrl, hint: '例如：Alice'),
               const SizedBox(height: 12),
               _textField(
                 '简介',
@@ -133,19 +129,11 @@ class ProfileEditView extends GetView<ProfileEditController> {
                 hint: '一句话介绍你自己',
               ),
               const SizedBox(height: 12),
-              _textField(
-                '头像URL',
-                controller.avatarUrlCtrl,
-                hint: 'http(s)://',
-              ),
+              _textField('头像URL', controller.avatarUrlCtrl, hint: 'http(s)://'),
               const SizedBox(height: 12),
               _textField('语言', controller.localeCtrl, hint: 'zh-CN'),
               const SizedBox(height: 12),
-              _textField(
-                '时区',
-                controller.timezoneCtrl,
-                hint: 'Asia/Shanghai',
-              ),
+              _textField('时区', controller.timezoneCtrl, hint: 'Asia/Shanghai'),
               const SizedBox(height: 12),
               _themeDropdown(controller),
               const SizedBox(height: 12),
@@ -173,9 +161,7 @@ class ProfileEditView extends GetView<ProfileEditController> {
                 const SizedBox(height: 12),
                 Text(
                   controller.error.value!,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ],
             ],

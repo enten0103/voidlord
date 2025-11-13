@@ -4,6 +4,6 @@ import '../pages/settings/settings_controller.dart';
 class SettingsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<SettingsController>(() => SettingsController(), fenix: true);
+    Get.lazyPut<SettingsController>(() => SettingsController());
   }
 }

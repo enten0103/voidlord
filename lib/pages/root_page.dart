@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_page.dart';
+import 'permissions/permissions_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
 
 class RootController extends GetxController {
@@ -23,12 +24,21 @@ class RootPage extends StatelessWidget {
     return Obx(() {
       final i = controller.index.value;
       final hasUpload = perm.hasBookUploadAccess.value;
-      final titles = ['广场', '搜索', '收藏', if (hasUpload) '上传', '我的'];
+      final hasPermMgmt = perm.canManagePermissions.value;
+      final titles = [
+        '广场',
+        '搜索',
+        '收藏',
+        if (hasUpload) '上传',
+        if (hasPermMgmt) '权限',
+        '我的',
+      ];
       final pages = [
         const _SquareTab(),
         const _SearchTab(),
         const _FavoritesTab(),
         if (hasUpload) const UploadPage(),
+        if (hasPermMgmt) const PermissionsPage(),
         const ProfileView(),
       ];
 
@@ -53,6 +63,12 @@ class RootPage extends StatelessWidget {
               icon: Icons.cloud_upload_outlined,
               selectedIcon: Icons.cloud_upload,
               label: '上传',
+            ),
+          if (hasPermMgmt)
+            const NavItem(
+              icon: Icons.admin_panel_settings_outlined,
+              selectedIcon: Icons.admin_panel_settings,
+              label: '权限',
             ),
           const NavItem(
             icon: Icons.person_outline,

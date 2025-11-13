@@ -64,8 +64,9 @@ extension BooksApi on Api {
     }
     if (res.statusCode == 401) throw BooksApiError('未登录', statusCode: 401);
     if (res.statusCode == 403) throw BooksApiError('权限不足', statusCode: 403);
-    if (res.statusCode == 409)
+    if (res.statusCode == 409) {
       throw BooksApiError('冲突: 标签或数据不合法', statusCode: 409);
+    }
     throw BooksApiError('创建图书失败', statusCode: res.statusCode);
   }
 

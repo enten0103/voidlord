@@ -20,7 +20,7 @@ class AuthService extends GetxService {
     final t = sp.getString(_kTokenKey);
     if (t != null && t.isNotEmpty) {
       _token = t;
-      api.setBearerToken(_token);
+      Get.find<Api>().setBearerToken(_token);
       loggedIn.value = true;
       // 恢复登录后立即尝试加载权限
       if (Get.isRegistered<PermissionService>()) {
@@ -42,13 +42,13 @@ class AuthService extends GetxService {
     }
 
     try {
-      final LoginResponse data = await api.login(
+      final LoginResponse data = await Get.find<Api>().login(
         username: username,
         password: password,
       );
       if (data.accessToken.isNotEmpty) {
         _token = data.accessToken;
-        api.setBearerToken(_token);
+        Get.find<Api>().setBearerToken(_token);
         try {
           final sp = await SharedPreferences.getInstance();
           await sp.setString(_kTokenKey, _token!);
@@ -75,7 +75,7 @@ class AuthService extends GetxService {
   Future<void> logout() async {
     loggedIn.value = false;
     _token = null;
-    api.setBearerToken(null);
+    Get.find<Api>().setBearerToken(null);
     if (!Get.testMode) {
       try {
         final sp = await SharedPreferences.getInstance();

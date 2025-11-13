@@ -34,7 +34,7 @@ extension AuthApi on Api {
       // /auth/login 不应返回 409，但为稳健保留处理
       if (status == 409) throw AuthApiError('用户名或邮箱已存在');
       throw AuthApiError('网络错误，请稍后重试');
-    } catch (_) {
+    } catch (e) {
       throw AuthApiError('发生未知错误');
     }
   }

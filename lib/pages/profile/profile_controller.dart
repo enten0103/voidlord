@@ -17,19 +17,7 @@ class ProfileController extends GetxController {
     loading.value = true;
     error.value = null;
     try {
-      if (Get.testMode) {
-        data.value = {
-          'display_name': '测试用户',
-          'bio': '这是测试简介',
-          'avatar_url': null,
-          'locale': 'zh-CN',
-          'timezone': 'UTC',
-          'theme': 'system',
-          'email_notifications': true,
-        };
-      } else {
-        data.value = await api.getMyConfig();
-      }
+      data.value = await Get.find<Api>().getMyConfig();
     } catch (e) {
       error.value = '加载失败';
     } finally {

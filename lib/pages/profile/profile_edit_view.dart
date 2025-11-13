@@ -44,7 +44,7 @@ class ProfileEditController extends GetxController {
           'email_notifications': true,
         };
       } else {
-        data = await api.getMyConfig();
+        data = await Get.find<Api>().getMyConfig();
       }
       displayNameCtrl.text = data['display_name'] ?? '';
       bioCtrl.text = data['bio'] ?? '';
@@ -73,7 +73,7 @@ class ProfileEditController extends GetxController {
         'theme': theme.value,
         'email_notifications': emailNotifications.value,
       }..removeWhere((k, v) => v == null);
-      await api.updateMyConfig(payload);
+      await Get.find<Api>().updateMyConfig(payload);
       SideBanner.info('个人配置已更新');
       Get.find<ProfileController>().onInit();
       Get.back();

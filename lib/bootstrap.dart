@@ -7,6 +7,7 @@ import 'services/auth_service.dart';
 import 'services/config_service.dart';
 import 'services/theme_service.dart';
 import 'services/permission_service.dart';
+import 'apis/client.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,9 +43,17 @@ Future initDependencies() async {
   await configService.init();
 
   Get.put<ConfigService>(configService, permanent: true);
+  // 注册 Api (需要在 auth 之前或之后均可，之后可以设置 token)
+  final apiClient = Api();
+  Get.put<Api>(apiClient, permanent: true);
   final auth = AuthService();
   await auth.init();
   Get.put<AuthService>(auth, permanent: true);
+  // 如果恢复了 token，写入 Api 拦截器缓存
+  final restoredToken = auth.token;
+  if (restoredToken != null && restoredToken.isNotEmpty) {
+    apiClient.setBearerToken(restoredToken);
+  }
   final themeService = ThemeService();
   await themeService.init();
   Get.put<ThemeService>(themeService, permanent: true);

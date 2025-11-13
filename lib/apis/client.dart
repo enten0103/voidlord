@@ -5,6 +5,7 @@ import '../config/app_environment.dart';
 
 class Api {
   final Dio client;
+  String? _bearerToken; // 缓存的 token，拦截器使用
 
   Api()
     : client = Dio(
@@ -17,6 +18,19 @@ class Api {
         ),
       ) {
     client.options.validateStatus = (status) => true;
+    // 请求拦截器：统一附加 Authorization（若存在）
+    client.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (_bearerToken != null && _bearerToken!.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer ${_bearerToken!}';
+          } else {
+            options.headers.remove('Authorization');
+          }
+          handler.next(options);
+        },
+      ),
+    );
   }
 
   static String _resolveBaseUrl() {
@@ -27,13 +41,6 @@ class Api {
   }
 
   void setBearerToken(String? token) {
-    if (token == null || token.isEmpty) {
-      client.options.headers.remove('Authorization');
-    } else {
-      client.options.headers['Authorization'] = 'Bearer $token';
-    }
+    _bearerToken = (token == null || token.isEmpty) ? null : token;
   }
 }
-
-// 便捷单例
-final Api api = Api();

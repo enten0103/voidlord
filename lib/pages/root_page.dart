@@ -4,6 +4,8 @@ import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_page.dart';
 import 'permissions/permissions_page.dart';
+import 'media_libraries/media_libraries_page.dart';
+import 'media_libraries/media_libraries_controller.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
 import 'package:voidlord/controllers/root_controller.dart';
 
@@ -27,10 +29,12 @@ class RootPage extends GetView<RootController> {
         if (hasPermMgmt) '权限',
         '我的',
       ];
+      // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
+      Get.lazyPut<MediaLibrariesController>(() => MediaLibrariesController(), fenix: true);
       final pages = [
         const _SquareTab(),
         const _SearchTab(),
-        const _FavoritesTab(),
+        const MediaLibrariesPage(),
         if (hasUpload) const UploadPage(),
         if (hasPermMgmt) const PermissionsPage(),
         const ProfileView(),
@@ -48,9 +52,9 @@ class RootPage extends GetView<RootController> {
           ),
           const NavItem(icon: Icons.search, label: '搜索'),
           const NavItem(
-            icon: Icons.bookmark_outline,
-            selectedIcon: Icons.bookmark,
-            label: '收藏',
+            icon: Icons.collections_bookmark_outlined,
+            selectedIcon: Icons.collections_bookmark,
+            label: '媒体库',
           ),
           if (hasUpload)
             const NavItem(
@@ -107,13 +111,3 @@ class _SearchTab extends StatelessWidget {
   }
 }
 
-class _FavoritesTab extends StatelessWidget {
-  const _FavoritesTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('收藏', style: Theme.of(context).textTheme.headlineMedium),
-    );
-  }
-}

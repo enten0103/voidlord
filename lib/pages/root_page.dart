@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_list_page.dart';
+import 'recommendations/recommendations_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
@@ -19,13 +20,15 @@ class RootPage extends GetView<RootController> {
     return Obx(() {
       final i = controller.index.value;
       final hasUpload = perm.hasBookUploadAccess.value;
-      final hasPermMgmt = perm.canManagePermissions.value;
+  final hasPermMgmt = perm.canManagePermissions.value;
+  final hasRecommend = perm.canManageRecommendations.value;
       final titles = [
         '广场',
         '搜索',
         '收藏',
         if (hasUpload) '上传',
         if (hasPermMgmt) '权限',
+        if (hasRecommend) '推荐',
         '我的',
       ];
       // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
@@ -35,6 +38,7 @@ class RootPage extends GetView<RootController> {
         const MediaLibrariesPage(),
         if (hasUpload) const UploadListPage(),
         if (hasPermMgmt) const PermissionsPage(),
+        if (hasRecommend) const RecommendationsPage(),
         const ProfileView(),
       ];
 
@@ -65,6 +69,12 @@ class RootPage extends GetView<RootController> {
               icon: Icons.admin_panel_settings_outlined,
               selectedIcon: Icons.admin_panel_settings,
               label: '权限',
+            ),
+          if (hasRecommend)
+            const NavItem(
+              icon: Icons.recommend_outlined,
+              selectedIcon: Icons.recommend,
+              label: '推荐',
             ),
           const NavItem(
             icon: Icons.person_outline,

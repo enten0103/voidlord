@@ -9,6 +9,7 @@ class PermissionService extends GetxService {
   // Derived reactive flags
   final hasBookUploadAccess = false.obs;
   final canManagePermissions = false.obs;
+  final canManageRecommendations = false.obs; // 推荐管理权限
 
   static const bookCreate = 'BOOK_CREATE';
   static const bookUpdate = 'BOOK_UPDATE';
@@ -28,6 +29,7 @@ class PermissionService extends GetxService {
         (levels[bookUpdate] ?? 0) >= 1 &&
         (levels[bookDelete] ?? 0) >= 1;
     canManagePermissions.value = levels.values.any((l) => l >= 3);
+    canManageRecommendations.value = (levels['RECOMMENDATION_MANAGE'] ?? 0) >= 1;
   }
 
   Future<void> load() async {

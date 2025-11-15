@@ -42,6 +42,20 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
+                // 刷新按钮：重新加载媒体库与分区
+                Obx(() => IconButton(
+                      tooltip: (controller.loading.value || libs.loading.value)
+                          ? '刷新中'
+                          : '刷新',
+                      icon: const Icon(Icons.refresh),
+                      onPressed: (controller.loading.value || libs.loading.value)
+                          ? null
+                          : () async {
+                              await libs.loadAll();
+                              await controller.load();
+                            },
+                    )),
+                const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: controller.creating.value
                       ? null
@@ -117,8 +131,8 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                                         libId!,
                                         description:
                                             descCtrl.text.trim().isNotEmpty
-                                                ? descCtrl.text.trim()
-                                                : null,
+                                            ? descCtrl.text.trim()
+                                            : null,
                                       );
                                       if (ctx.mounted) {
                                         Navigator.pop(ctx);

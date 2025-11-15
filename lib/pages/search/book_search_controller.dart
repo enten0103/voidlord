@@ -16,6 +16,7 @@ class BookSearchController extends GetxController {
   final searching = false.obs; // 首次搜索按钮状态
   final advancedMode = false.obs; // 是否显示高级搜索面板
   final simpleQuery = ''.obs; // 简单搜索输入（匹配 title 标签）
+  final selectedSimpleKey = 'TITLE'.obs; // 当前简单搜索使用的标签 KEY
 
   Api get api => Get.find<Api>();
 
@@ -129,5 +130,24 @@ class BookSearchController extends GetxController {
       loading.value = false;
       searching.value = false;
     }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    // 输入自动搜索（防抖）
+    debounce<String>(simpleQuery, (val) async {
+      final q = val.trim();
+      if (q.isEmpty) {
+        // 清空结果状态
+        results.clear();
+        total.value = null;
+        offset.value = 0;
+        hasMore.value = false;
+        return;
+      }
+      // 自动按当前选中标签搜索
+      await searchMatchKey(selectedSimpleKey.value, reset: true);
+    }, time: const Duration(milliseconds: 450));
   }
 }

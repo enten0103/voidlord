@@ -153,14 +153,15 @@ class BookSearchPage extends GetView<BookSearchController> {
                 enabled: !controller.loading.value,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: '每页'),
-                controller: TextEditingController(
-                  text: controller.limit.value.toString(),
-                )
-                  ..selection = TextSelection.fromPosition(
-                    TextPosition(
-                      offset: controller.limit.value.toString().length,
-                    ),
-                  ),
+                controller:
+                    TextEditingController(
+                        text: controller.limit.value.toString(),
+                      )
+                      ..selection = TextSelection.fromPosition(
+                        TextPosition(
+                          offset: controller.limit.value.toString().length,
+                        ),
+                      ),
                 onSubmitted: (v) {
                   final n = int.tryParse(v.trim());
                   if (n != null && n > 0 && n <= 100) {
@@ -189,16 +190,9 @@ class BookSearchPage extends GetView<BookSearchController> {
           controller: queryCtrl,
           enabled: !controller.loading.value,
           decoration: const InputDecoration(
-            labelText: '输入关键字，选择下方候选进行搜索',
+            labelText: '输入关键字自动搜索 (默认标题)',
             prefixIcon: Icon(Icons.search),
           ),
-          onSubmitted: (_) async {
-            controller.simpleQuery.value = queryCtrl.text;
-            await controller.searchMatchKey('TITLE', reset: true);
-            if (controller.results.isEmpty && controller.error.value == null) {
-              SideBanner.warning('未找到匹配书籍');
-            }
-          },
           onChanged: (v) => controller.simpleQuery.value = v,
         ),
         const SizedBox(height: 6),
@@ -318,10 +312,11 @@ class BookSearchPage extends GetView<BookSearchController> {
   Widget _suggestions(BuildContext context) {
     final q = controller.simpleQuery.value.trim();
     if (q.isEmpty) return const SizedBox();
+    final active = controller.selectedSimpleKey.value;
     final List<_Candidate> list = [
-      _Candidate(label: '标题', key: 'TITLE', display: '标题：$q'),
-      _Candidate(label: '作者', key: 'AUTHOR', display: '作者：$q'),
-      _Candidate(label: '分类', key: 'CLASS', display: '分类：$q'),
+      _Candidate(label: '标题', key: 'TITLE', display: '标题：$q', active: active == 'TITLE'),
+      _Candidate(label: '作者', key: 'AUTHOR', display: '作者：$q', active: active == 'AUTHOR'),
+      _Candidate(label: '分类', key: 'CLASS', display: '分类：$q', active: active == 'CLASS'),
     ];
     return Card(
       elevation: 2,
@@ -331,11 +326,13 @@ class BookSearchPage extends GetView<BookSearchController> {
           for (final c in list)
             ListTile(
               dense: true,
-              leading: const Icon(Icons.arrow_right),
-              title: Text(c.display),
+              leading: Icon(c.active ? Icons.radio_button_checked : Icons.radio_button_unchecked),
+              title: Text(c.display, style: c.active ? const TextStyle(fontWeight: FontWeight.bold) : null),
               onTap: controller.loading.value
                   ? null
                   : () async {
+                      controller.selectedSimpleKey.value = c.key; // 更新选中 KEY
+                      // 立即搜索（debounce 会忽略本次，因为我们主动调用）
                       await controller.searchMatchKey(c.key, reset: true);
                       if (controller.results.isEmpty &&
                           controller.error.value == null) {
@@ -353,5 +350,6 @@ class _Candidate {
   final String label; // 描述性标签
   final String key; // 用于后端搜索的 KEY
   final String display; // 展示内容
-  _Candidate({required this.label, required this.key, required this.display});
+  final bool active; // 是否为当前选中
+  _Candidate({required this.label, required this.key, required this.display, this.active = false});
 }

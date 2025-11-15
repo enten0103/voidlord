@@ -124,7 +124,7 @@ extension BooksApi on Api {
 
   /// 新标签条件搜索 POST /books/search
   /// 兼容两种响应：
-  /// 1) 未分页: 直接返回 List<BookDto>
+  /// 1) 未分页: 直接返回 List\<BookDto\>
   /// 2) 分页: 返回 { total, limit, offset, items: [...] }
   Future<BookSearchResponse> searchBooks({
     required List<BookSearchCondition> conditions,
@@ -150,7 +150,9 @@ extension BooksApi on Api {
           items: items,
           total: (map['total'] is num) ? (map['total'] as num).toInt() : null,
           limit: (map['limit'] is num) ? (map['limit'] as num).toInt() : null,
-          offset: (map['offset'] is num) ? (map['offset'] as num).toInt() : null,
+          offset: (map['offset'] is num)
+              ? (map['offset'] as num).toInt()
+              : null,
         );
       }
       // 直接数组
@@ -165,6 +167,7 @@ extension BooksApi on Api {
     if (res.statusCode == 400) {
       throw BooksApiError('搜索参数不合法', statusCode: 400);
     }
+    print(res.data);
     throw BooksApiError('搜索失败', statusCode: res.statusCode);
   }
 
@@ -311,9 +314,14 @@ class BookSearchCondition {
   final String target; // tag key
   final String op; // eq | neq | match
   final String value;
-  BookSearchCondition({required this.target, required this.op, required this.value});
+  BookSearchCondition({
+    required this.target,
+    required this.op,
+    required this.value,
+  });
   Map<String, dynamic> toJson() => {
-        'target': target,
+        // 后端采用大写枚举风格 (e.g. TITLE / AUTHOR / COVER)，统一向上层发送大写
+        'target': target.toUpperCase(),
         'op': op,
         'value': value,
       };

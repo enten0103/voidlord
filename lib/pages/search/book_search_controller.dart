@@ -96,9 +96,9 @@ class BookSearchController extends GetxController {
     loading.value = true;
     try {
       final q = simpleQuery.value.trim();
-      final List<BookSearchCondition> list = q.isEmpty
-          ? []
-          : [BookSearchCondition(target: 'title', op: 'match', value: q)];
+          final List<BookSearchCondition> list = q.isEmpty
+              ? []
+              : [BookSearchCondition(target: 'TITLE', op: 'match', value: q)];
       final resp = await api.searchBooks(
         conditions: list,
         limit: limit.value,

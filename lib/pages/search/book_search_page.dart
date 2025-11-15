@@ -153,13 +153,15 @@ class BookSearchPage extends GetView<BookSearchController> {
                 enabled: !controller.loading.value,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: '每页'),
-                controller: TextEditingController(
-                  text: controller.limit.value.toString(),
-                )..selection = TextSelection.fromPosition(
-                    TextPosition(
-                      offset: controller.limit.value.toString().length,
-                    ),
-                  ),
+                controller:
+                    TextEditingController(
+                        text: controller.limit.value.toString(),
+                      )
+                      ..selection = TextSelection.fromPosition(
+                        TextPosition(
+                          offset: controller.limit.value.toString().length,
+                        ),
+                      ),
                 onSubmitted: (v) {
                   final n = int.tryParse(v.trim());
                   if (n != null && n > 0 && n <= 100) {
@@ -230,13 +232,15 @@ class BookSearchPage extends GetView<BookSearchController> {
                   enabled: !controller.loading.value,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: '每页'),
-                  controller: TextEditingController(
-                    text: controller.limit.value.toString(),
-                  )..selection = TextSelection.fromPosition(
-                      TextPosition(
-                        offset: controller.limit.value.toString().length,
-                      ),
-                    ),
+                  controller:
+                      TextEditingController(
+                          text: controller.limit.value.toString(),
+                        )
+                        ..selection = TextSelection.fromPosition(
+                          TextPosition(
+                            offset: controller.limit.value.toString().length,
+                          ),
+                        ),
                   onSubmitted: (v) {
                     final n = int.tryParse(v.trim());
                     if (n != null && n > 0 && n <= 100) {
@@ -328,14 +332,17 @@ class BookSearchPage extends GetView<BookSearchController> {
       ),
       itemBuilder: (ctx, i) {
         final b = controller.results[i];
-        // 提取标题与作者标签（若不存在则回退为空字符串）
+        // 提取标签（大小写兼容），并支持封面展示。
         String title = '';
         String author = '';
+        String? cover;
         for (final t in b.tags) {
-          if (t.key == 'title') title = t.value;
-          if (t.key == 'author') author = t.value;
+          final k = t.key.toUpperCase();
+          if (k == 'TITLE') title = t.value;
+          if (k == 'AUTHOR') author = t.value;
+          if (k == 'COVER') cover = t.value;
         }
-        return BookTile(title: title, author: author);
+        return BookTile(title: title, author: author, cover: cover);
       },
     );
   }

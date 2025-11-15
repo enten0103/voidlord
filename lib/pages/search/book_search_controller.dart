@@ -135,8 +135,8 @@ class BookSearchController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 输入防抖，仅处理清空；不自动搜索，搜索由点击候选触发
-    debounce<String>(simpleQuery, (val) async {
+    // 直接响应输入变化：输入为空时清空结果
+    ever<String>(simpleQuery, (val) {
       final q = val.trim();
       if (q.isEmpty) {
         results.clear();
@@ -144,6 +144,6 @@ class BookSearchController extends GetxController {
         offset.value = 0;
         hasMore.value = false;
       }
-    }, time: const Duration(milliseconds: 200));
+    });
   }
 }

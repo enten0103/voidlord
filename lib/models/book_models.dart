@@ -106,8 +106,11 @@ class UpdateBookRequest {
 class RatingResponse {
   final bool ok;
   final int bookId;
+  /// 当前用户评分；若服务端未返回则默认为 0 表示未评分
   final int myRating;
+  /// 平均分；缺失时回退为 0.0
   final double avg;
+  /// 总评分人数；缺失时回退为 0
   final int count;
 
   RatingResponse({
@@ -119,20 +122,20 @@ class RatingResponse {
   });
 
   factory RatingResponse.fromJson(Map<String, dynamic> json) => RatingResponse(
-    ok: json['ok'] == true,
-    bookId: (json['bookId'] as num).toInt(),
-    myRating: (json['myRating'] as num).toInt(),
-    avg: (json['avg'] as num).toDouble(),
-    count: (json['count'] as num).toInt(),
-  );
+        ok: json['ok'] == null ? true : json['ok'] == true,
+        bookId: (json['bookId'] as num?)?.toInt() ?? 0,
+        myRating: (json['myRating'] as num?)?.toInt() ?? 0,
+        avg: (json['avg'] as num?)?.toDouble() ?? 0.0,
+        count: (json['count'] as num?)?.toInt() ?? 0,
+      );
 
   Map<String, dynamic> toJson() => {
-    'ok': ok,
-    'bookId': bookId,
-    'myRating': myRating,
-    'avg': avg,
-    'count': count,
-  };
+        'ok': ok,
+        'bookId': bookId,
+        'myRating': myRating,
+        'avg': avg,
+        'count': count,
+      };
 }
 
 class OkResponse {

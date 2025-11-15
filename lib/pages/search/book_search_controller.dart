@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import '../../apis/client.dart';
 import '../../apis/books_api.dart';
 import '../../models/book_models.dart';
@@ -18,6 +19,7 @@ class BookSearchController extends GetxController {
   final simpleQuery = ''.obs; // 简单搜索输入（匹配 title 标签）
   final selectedSimpleKey = 'TITLE'.obs; // 当前简单搜索使用的标签 KEY
   final simpleSuggestionsVisible = true.obs; // 是否显示简单候选
+  late final TextEditingController simpleTextController = TextEditingController();
 
   Api get api => Get.find<Api>();
 
@@ -91,7 +93,11 @@ class BookSearchController extends GetxController {
   }
 
   /// 根据指定标签 key (TITLE/AUTHOR/CLASS 等) 做 match 搜索
-  Future<void> searchMatchKey(String key, {bool reset = true, String? valueOverride}) async {
+  Future<void> searchMatchKey(
+    String key, {
+    bool reset = true,
+    String? valueOverride,
+  }) async {
     if (loading.value) return;
     searching.value = true;
     if (reset) {
@@ -150,6 +156,13 @@ class BookSearchController extends GetxController {
         if (!simpleSuggestionsVisible.value) {
           simpleSuggestionsVisible.value = true;
         }
+      }
+      // 仅在程序触发（如候选点击）或外部赋值与当前输入不一致时同步 TextField 内容
+      if (simpleTextController.text != val) {
+        simpleTextController.value = TextEditingValue(
+          text: val,
+          selection: TextSelection.collapsed(offset: val.length),
+        );
       }
     });
   }

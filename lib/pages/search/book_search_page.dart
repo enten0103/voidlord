@@ -182,39 +182,34 @@ class BookSearchPage extends GetView<BookSearchController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Obx(() {
-          return TextField(
-            controller: TextEditingController(text: controller.simpleQuery.value)
-              ..selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.simpleQuery.value.length),
-              ),
-            enabled: !controller.loading.value,
-            decoration: InputDecoration(
-              labelText: '输入关键字，点击候选搜索',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: TextButton(
-                onPressed: controller.loading.value
-                    ? null
-                    : () => controller.advancedMode.toggle(),
-                child: Text(controller.advancedMode.value ? '收起高级' : '高级搜索'),
-              ),
-            ),
-            onChanged: (v) {
-              // 如果之前是候选被点击后的展示内容，重新输入时恢复候选显示并去掉前缀
-              String raw = v;
-              for (final p in ['标题：', '作者：', '分类：']) {
-                if (raw.startsWith(p)) {
-                  raw = raw.substring(p.length);
-                  break;
-                }
+        TextField(
+          controller: controller.simpleTextController,
+          enabled: !controller.loading.value,
+          decoration: InputDecoration(
+            labelText: '输入关键字，点击候选搜索',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: Obx(() => TextButton(
+                  onPressed: controller.loading.value
+                      ? null
+                      : () => controller.advancedMode.toggle(),
+                  child: Text(
+                      controller.advancedMode.value ? '收起高级' : '高级搜索'),
+                )),
+          ),
+          onChanged: (v) {
+            String raw = v;
+            for (final p in ['标题：', '作者：', '分类：']) {
+              if (raw.startsWith(p)) {
+                raw = raw.substring(p.length);
+                break;
               }
-              controller.simpleQuery.value = raw;
-              controller.simpleSuggestionsVisible.value = true;
-            },
-          );
-        }),
+            }
+            controller.simpleQuery.value = raw;
+            controller.simpleSuggestionsVisible.value = true;
+          },
+        ),
         const SizedBox(height: 6),
-  _suggestionsReactive(context),
+        _suggestionsReactive(context),
         if (controller.loading.value)
           const Padding(
             padding: EdgeInsets.only(top: 8.0),
@@ -363,9 +358,13 @@ class BookSearchPage extends GetView<BookSearchController> {
                   : () async {
                       controller.selectedSimpleKey.value = c.key;
                       // 回显候选内容到输入框并隐藏候选
-                      controller.simpleQuery.value = c.display;
+                      controller.simpleQuery.value = c.display; // 将展示文本写入（同步到 controller via ever）
                       controller.simpleSuggestionsVisible.value = false;
-                      await controller.searchMatchKey(c.key, reset: true, valueOverride: q);
+                      await controller.searchMatchKey(
+                        c.key,
+                        reset: true,
+                        valueOverride: q,
+                      );
                       if (controller.results.isEmpty &&
                           controller.error.value == null) {
                         SideBanner.info('未找到匹配结果');

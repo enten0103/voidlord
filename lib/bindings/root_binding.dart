@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:voidlord/pages/media_libraries/media_libraries_controller.dart';
 import 'package:voidlord/pages/upload/upload_list_controller.dart';
 import 'package:voidlord/pages/recommendations/recommendations_controller.dart';
+import 'package:voidlord/pages/search/book_search_controller.dart';
 import '../controllers/root_controller.dart';
 import '../pages/permissions/permissions_controller.dart';
 import '../pages/profile/profile_controller.dart';
@@ -19,5 +20,6 @@ class RootBinding extends Bindings {
     Get.lazyPut<UploadListController>(() => UploadListController());
     Get.lazyPut<RecommendationsController>(() => RecommendationsController());
     Get.lazyPut<SquareController>(() => SquareController());
+    Get.lazyPut<BookSearchController>(() => BookSearchController());
   }
 }

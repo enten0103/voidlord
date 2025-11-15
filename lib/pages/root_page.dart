@@ -5,6 +5,7 @@ import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_list_page.dart';
 import 'square/square_page.dart';
 import 'recommendations/recommendations_page.dart';
+import 'search/book_search_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
@@ -35,7 +36,7 @@ class RootPage extends GetView<RootController> {
       // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
       final pages = [
         const SquarePage(),
-        const _SearchTab(),
+  const BookSearchPage(),
         const MediaLibrariesPage(),
         if (hasUpload) const UploadListPage(),
         if (hasPermMgmt) const PermissionsPage(),
@@ -90,13 +91,4 @@ class RootPage extends GetView<RootController> {
   }
 }
 
-class _SearchTab extends StatelessWidget {
-  const _SearchTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('搜索', style: Theme.of(context).textTheme.headlineMedium),
-    );
-  }
-}
+// 搜索页已正式替换 _SearchTab 使用 BookSearchPage

@@ -50,8 +50,10 @@ class MediaLibrariesService extends GetxService {
           tags: tags,
         ),
       );
-      myLibraries.insert(0, created);
+      myLibraries.insert(0, created); // 先本地插入, 保证即时反馈
       SideBanner.info('已创建媒体库');
+      // 后台刷新整体列表 & 系统库/虚拟库, 避免缓存不一致
+      Future.microtask(() => loadAll());
     } catch (e) {
       final msg = _extractMessage(e) ?? '创建失败';
       SideBanner.danger(msg);
@@ -61,8 +63,10 @@ class MediaLibrariesService extends GetxService {
   Future<void> deleteLibrary(int id) async {
     try {
       await api.deleteLibrary(id);
-      myLibraries.removeWhere((e) => e.id == id);
+      myLibraries.removeWhere((e) => e.id == id); // 即时移除
       SideBanner.info('已删除媒体库');
+      // 删除后刷新: 处理排序、系统库状态、虚拟库关联等
+      Future.microtask(() => loadAll());
     } catch (e) {
       final msg = _extractMessage(e) ?? '删除失败';
       SideBanner.danger(msg);
@@ -75,6 +79,8 @@ class MediaLibrariesService extends GetxService {
       final idx = myLibraries.indexWhere((e) => e.id == id);
       if (idx >= 0) myLibraries[idx] = updated;
       SideBanner.info('已更新媒体库');
+      // 更新后刷新获取最新统计/标签/系统库可能受影响
+      Future.microtask(() => loadAll());
     } catch (e) {
       final msg = _extractMessage(e) ?? '更新失败';
       SideBanner.danger(msg);

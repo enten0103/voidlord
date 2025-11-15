@@ -14,6 +14,8 @@ class BookSearchController extends GetxController {
   final offset = 0.obs;
   final hasMore = false.obs;
   final searching = false.obs; // 首次搜索按钮状态
+  final advancedMode = false.obs; // 是否显示高级搜索面板
+  final simpleQuery = ''.obs; // 简单搜索输入（匹配 title 标签）
 
   Api get api => Get.find<Api>();
 
@@ -78,5 +80,48 @@ class BookSearchController extends GetxController {
     if (!hasMore.value || loading.value) return;
     offset.value += limit.value;
     await search(reset: false);
+  }
+
+  /// 简单模式搜索：按 title 标签做 match
+  Future<void> searchSimple({bool reset = true}) async {
+    if (loading.value) return;
+    // 将 conditions 暂不参与（保留高级模式配置但不作用）
+    searching.value = true;
+    if (reset) {
+      offset.value = 0;
+      results.clear();
+      total.value = null;
+    }
+    error.value = null;
+    loading.value = true;
+    try {
+      final q = simpleQuery.value.trim();
+      final List<BookSearchCondition> list = q.isEmpty
+          ? []
+          : [BookSearchCondition(target: 'title', op: 'match', value: q)];
+      final resp = await api.searchBooks(
+        conditions: list,
+        limit: limit.value,
+        offset: offset.value,
+      );
+      if (reset) {
+        results.assignAll(resp.items);
+      } else {
+        results.addAll(resp.items);
+      }
+      total.value = resp.total;
+      if (resp.paged) {
+        final fetched = offset.value + resp.items.length;
+        hasMore.value = resp.total != null && fetched < resp.total!;
+      } else {
+        hasMore.value = false;
+      }
+    } catch (e) {
+      error.value = '搜索失败';
+      SideBanner.danger(error.value!);
+    } finally {
+      loading.value = false;
+      searching.value = false;
+    }
   }
 }

@@ -179,22 +179,40 @@ class BookSearchPage extends GetView<BookSearchController> {
   }
 
   Widget _simpleSearchBar(BuildContext context) {
-    final queryCtrl = TextEditingController(text: controller.simpleQuery.value)
-      ..selection = TextSelection.fromPosition(
-        TextPosition(offset: controller.simpleQuery.value.length),
-      );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: queryCtrl,
-          enabled: !controller.loading.value,
-          decoration: const InputDecoration(
-            labelText: '输入关键字，点击下方候选开始搜索',
-            prefixIcon: Icon(Icons.search),
-          ),
-          onChanged: (v) => controller.simpleQuery.value = v,
-        ),
+        Obx(() {
+          return TextField(
+            controller: TextEditingController(text: controller.simpleQuery.value)
+              ..selection = TextSelection.fromPosition(
+                TextPosition(offset: controller.simpleQuery.value.length),
+              ),
+            enabled: !controller.loading.value,
+            decoration: InputDecoration(
+              labelText: '输入关键字，点击候选搜索',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: TextButton(
+                onPressed: controller.loading.value
+                    ? null
+                    : () => controller.advancedMode.toggle(),
+                child: Text(controller.advancedMode.value ? '收起高级' : '高级搜索'),
+              ),
+            ),
+            onChanged: (v) {
+              // 如果之前是候选被点击后的展示内容，重新输入时恢复候选显示并去掉前缀
+              String raw = v;
+              for (final p in ['标题：', '作者：', '分类：']) {
+                if (raw.startsWith(p)) {
+                  raw = raw.substring(p.length);
+                  break;
+                }
+              }
+              controller.simpleQuery.value = raw;
+              controller.simpleSuggestionsVisible.value = true;
+            },
+          );
+        }),
         const SizedBox(height: 6),
   _suggestionsReactive(context),
         if (controller.loading.value)
@@ -312,7 +330,9 @@ class BookSearchPage extends GetView<BookSearchController> {
   Widget _suggestionsReactive(BuildContext context) {
     return Obx(() {
       final q = controller.simpleQuery.value.trim();
-      if (q.isEmpty) return const SizedBox();
+      if (q.isEmpty || !controller.simpleSuggestionsVisible.value) {
+        return const SizedBox();
+      }
       final active = controller.selectedSimpleKey.value;
       final List<_Candidate> list = [
         _Candidate(
@@ -342,7 +362,10 @@ class BookSearchPage extends GetView<BookSearchController> {
                   ? null
                   : () async {
                       controller.selectedSimpleKey.value = c.key;
-                      await controller.searchMatchKey(c.key, reset: true);
+                      // 回显候选内容到输入框并隐藏候选
+                      controller.simpleQuery.value = c.display;
+                      controller.simpleSuggestionsVisible.value = false;
+                      await controller.searchMatchKey(c.key, reset: true, valueOverride: q);
                       if (controller.results.isEmpty &&
                           controller.error.value == null) {
                         SideBanner.info('未找到匹配结果');
@@ -350,14 +373,13 @@ class BookSearchPage extends GetView<BookSearchController> {
                     },
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
                 decoration: BoxDecoration(
                   color: c.active
-                      ? Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.10)
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.10)
                       : Colors.transparent,
                   border: Border(
                     bottom: BorderSide(

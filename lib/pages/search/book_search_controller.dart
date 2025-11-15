@@ -17,6 +17,7 @@ class BookSearchController extends GetxController {
   final advancedMode = false.obs; // 是否显示高级搜索面板
   final simpleQuery = ''.obs; // 简单搜索输入（匹配 title 标签）
   final selectedSimpleKey = 'TITLE'.obs; // 当前简单搜索使用的标签 KEY
+  final simpleSuggestionsVisible = true.obs; // 是否显示简单候选
 
   Api get api => Get.find<Api>();
 
@@ -90,7 +91,7 @@ class BookSearchController extends GetxController {
   }
 
   /// 根据指定标签 key (TITLE/AUTHOR/CLASS 等) 做 match 搜索
-  Future<void> searchMatchKey(String key, {bool reset = true}) async {
+  Future<void> searchMatchKey(String key, {bool reset = true, String? valueOverride}) async {
     if (loading.value) return;
     searching.value = true;
     if (reset) {
@@ -101,7 +102,7 @@ class BookSearchController extends GetxController {
     error.value = null;
     loading.value = true;
     try {
-      final q = simpleQuery.value.trim();
+      final q = (valueOverride ?? simpleQuery.value).trim();
       final keyUp = key.toUpperCase();
       final List<BookSearchCondition> list = q.isEmpty
           ? []
@@ -143,6 +144,12 @@ class BookSearchController extends GetxController {
         total.value = null;
         offset.value = 0;
         hasMore.value = false;
+        simpleSuggestionsVisible.value = false;
+      } else {
+        // 有输入时显示候选（除非已被点击关闭重新输入会再打开）
+        if (!simpleSuggestionsVisible.value) {
+          simpleSuggestionsVisible.value = true;
+        }
       }
     });
   }

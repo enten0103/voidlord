@@ -547,8 +547,9 @@ class _BannerCardState extends State<_BannerCard>
                         shape: const CircleBorder(),
                         child: InkWell(
                           customBorder: const CircleBorder(),
-                          splashColor: fg.withOpacity(0.18),
-                          highlightColor: fg.withOpacity(0.08),
+                          // 使用 withValues 替代 deprecated withOpacity
+                          splashColor: fg.withValues(alpha: 0.18),
+                          highlightColor: fg.withValues(alpha: 0.08),
                           onTap: _close,
                           onTapDown: (_) => setState(() => _closeScale = 0.86),
                           onTapCancel: () => setState(() => _closeScale = 1.0),

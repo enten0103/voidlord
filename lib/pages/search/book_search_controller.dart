@@ -84,8 +84,13 @@ class BookSearchController extends GetxController {
 
   /// 简单模式搜索：按 title 标签做 match
   Future<void> searchSimple({bool reset = true}) async {
+    // 默认使用 TITLE 做匹配
+    await searchMatchKey('TITLE', reset: reset);
+  }
+
+  /// 根据指定标签 key (TITLE/AUTHOR/CLASS 等) 做 match 搜索
+  Future<void> searchMatchKey(String key, {bool reset = true}) async {
     if (loading.value) return;
-    // 将 conditions 暂不参与（保留高级模式配置但不作用）
     searching.value = true;
     if (reset) {
       offset.value = 0;
@@ -96,9 +101,10 @@ class BookSearchController extends GetxController {
     loading.value = true;
     try {
       final q = simpleQuery.value.trim();
-          final List<BookSearchCondition> list = q.isEmpty
-              ? []
-              : [BookSearchCondition(target: 'TITLE', op: 'match', value: q)];
+      final keyUp = key.toUpperCase();
+      final List<BookSearchCondition> list = q.isEmpty
+          ? []
+          : [BookSearchCondition(target: keyUp, op: 'match', value: q)];
       final resp = await api.searchBooks(
         conditions: list,
         limit: limit.value,

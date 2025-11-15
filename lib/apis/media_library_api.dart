@@ -21,13 +21,19 @@ extension MediaLibraryApi on Api {
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<MediaLibraryDto> getReadingRecordLibrary({int? limit, int? offset}) async {
+  Future<MediaLibraryDto> getReadingRecordLibrary({
+    int? limit,
+    int? offset,
+  }) async {
     final qs = _buildPageQS(limit, offset);
     final resp = await client.get('/media-libraries/reading-record$qs');
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<MediaLibraryDto> getVirtualMyUploadedLibrary({int? limit, int? offset}) async {
+  Future<MediaLibraryDto> getVirtualMyUploadedLibrary({
+    int? limit,
+    int? offset,
+  }) async {
     final qs = _buildPageQS(limit, offset);
     final resp = await client.get('/media-libraries/virtual/my-uploaded$qs');
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
@@ -79,6 +85,6 @@ extension MediaLibraryApi on Api {
     final params = <String, String>{};
     if (limit != null) params['limit'] = '$limit';
     if (offset != null) params['offset'] = '$offset';
-    return '?'+params.entries.map((e)=>'${e.key}=${e.value}').join('&');
+    return '?${params.entries.map((e) => '${e.key}=${e.value}').join('&')}';
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/models/book_models.dart';
 import '../../widgets/book_tile.dart';
-import '../root/square_controller.dart';
+import 'square_controller.dart';
 
 class SquarePage extends GetView<SquareController> {
   const SquarePage({super.key});
@@ -20,10 +20,7 @@ class SquarePage extends GetView<SquareController> {
             children: [
               Text(controller.error.value!),
               const SizedBox(height: 12),
-              FilledButton(
-                onPressed: controller.load,
-                child: const Text('重试'),
-              ),
+              FilledButton(onPressed: controller.load, child: const Text('重试')),
             ],
           ),
         );
@@ -65,8 +62,9 @@ class SquarePage extends GetView<SquareController> {
                     child: Chip(
                       label: const Text('未启用'),
                       visualDensity: VisualDensity.compact,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceVariant,
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                     ),
                   ),
               ],

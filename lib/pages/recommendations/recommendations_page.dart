@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'recommendations_controller.dart';
 import '../../services/media_libraries_service.dart';
 import '../../widgets/side_baner.dart';
+import '../../models/recommendations_models.dart';
 
 class RecommendationsPage extends GetView<RecommendationsController> {
   const RecommendationsPage({super.key});
@@ -43,18 +44,20 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                   ),
                 ),
                 // 刷新按钮：重新加载媒体库与分区
-                Obx(() => IconButton(
-                      tooltip: (controller.loading.value || libs.loading.value)
-                          ? '刷新中'
-                          : '刷新',
-                      icon: const Icon(Icons.refresh),
-                      onPressed: (controller.loading.value || libs.loading.value)
-                          ? null
-                          : () async {
-                              await libs.loadAll();
-                              await controller.load();
-                            },
-                    )),
+                Obx(
+                  () => IconButton(
+                    tooltip: (controller.loading.value || libs.loading.value)
+                        ? '刷新中'
+                        : '刷新',
+                    icon: const Icon(Icons.refresh),
+                    onPressed: (controller.loading.value || libs.loading.value)
+                        ? null
+                        : () async {
+                            await libs.loadAll();
+                            await controller.load();
+                          },
+                  ),
+                ),
                 const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: controller.creating.value
@@ -94,20 +97,10 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      DropdownButtonFormField<int>(
-                                        initialValue: libId,
-                                        items: libs.myLibraries
-                                            .map(
-                                              (e) => DropdownMenuItem(
-                                                value: e.id,
-                                                child: Text(e.name),
-                                              ),
-                                            )
-                                            .toList(),
-                                        onChanged: (v) => libId = v,
-                                        decoration: const InputDecoration(
-                                          labelText: '媒体库',
-                                        ),
+                                      _createDialogLibraryDropdown(
+                                        libs,
+                                        (v) => libId = v,
+                                        libId,
                                       ),
                                     ],
                                   ),
@@ -280,29 +273,7 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                         ],
                       ),
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<int>(
-                        initialValue: sec.mediaLibraryId,
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: '关联媒体库'),
-                        items: libs.myLibraries
-                            .map(
-                              (lib) => DropdownMenuItem<int>(
-                                value: lib.id,
-                                child: Text(
-                                  lib.name,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: controller.saving.value
-                            ? null
-                            : (val) {
-                                if (val != null && val != sec.mediaLibraryId) {
-                                  controller.changeLibrary(sec.id, val);
-                                }
-                              },
-                      ),
+                      _libraryDropdown(context, libs, sec),
                       if (sec.description != null &&
                           sec.description!.isNotEmpty)
                         Padding(
@@ -339,5 +310,79 @@ class RecommendationsPage extends GetView<RecommendationsController> {
         ),
       );
     });
+  }
+
+  // 创建分区对话框中的库选择，下拉安全处理：若当前选中值不在列表中则置为 null
+  Widget _createDialogLibraryDropdown(
+    MediaLibrariesService libs,
+    ValueChanged<int?> onChanged,
+    int? current,
+  ) {
+    final ids = libs.myLibraries.map((e) => e.id).toSet();
+    final safeValue = (current != null && ids.contains(current))
+        ? current
+        : null;
+    final items = libs.myLibraries
+        .map(
+          (e) => DropdownMenuItem<int>(
+            value: e.id,
+            child: Text(e.name, overflow: TextOverflow.ellipsis),
+          ),
+        )
+        .toList();
+    if (items.isEmpty) {
+      // 提示用户需要先创建媒体库
+      items.add(const DropdownMenuItem<int>(value: null, child: Text('暂无媒体库')));
+    }
+    return DropdownButtonFormField<int>(
+      value: safeValue,
+      decoration: const InputDecoration(labelText: '媒体库'),
+      items: items,
+      onChanged: onChanged,
+    );
+  }
+
+  // 列表中分区关联库选择，若库被删除则显示占位并允许重新选择
+  Widget _libraryDropdown(
+    BuildContext context,
+    MediaLibrariesService libs,
+    RecommendationSectionDto sec,
+  ) {
+    final ids = libs.myLibraries.map((e) => e.id).toSet();
+    final exists = ids.contains(sec.mediaLibraryId);
+    final items = libs.myLibraries
+        .map(
+          (lib) => DropdownMenuItem<int>(
+            value: lib.id,
+            child: Text(lib.name, overflow: TextOverflow.ellipsis),
+          ),
+        )
+        .toList();
+
+    // 如果关联库已不存在，提供占位条目避免 DropdownButton 断言，同时 value 设为 null
+    if (!exists) {
+      items.insert(
+        0,
+        const DropdownMenuItem<int>(value: null, child: Text('已删除(请选择)')),
+      );
+    }
+
+    if (items.isEmpty) {
+      items.add(const DropdownMenuItem<int>(value: null, child: Text('暂无媒体库')));
+    }
+
+    return DropdownButtonFormField<int>(
+      value: exists ? sec.mediaLibraryId : null,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: '关联媒体库'),
+      items: items,
+      onChanged: controller.saving.value
+          ? null
+          : (val) {
+              if (val != null && val != sec.mediaLibraryId) {
+                controller.changeLibrary(sec.id, val);
+              }
+            },
+    );
   }
 }

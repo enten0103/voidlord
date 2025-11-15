@@ -119,4 +119,14 @@ class SquareController extends GetxController {
   }
 
   BookDto? bookFor(int id) => bookCache[id];
+
+  List<BookDto> booksForSection(int mediaLibraryId) {
+    if (mediaLibraryId == 0) return const [];
+    final lib = libraries[mediaLibraryId];
+    if (lib == null) return const [];
+    return lib.items
+        .where((it) => it.book != null && bookCache.containsKey(it.book!.id))
+        .map((it) => bookCache[it.book!.id]!)
+        .toList();
+  }
 }

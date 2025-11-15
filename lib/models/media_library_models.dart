@@ -61,8 +61,8 @@ class MediaLibraryDto {
       copiedFrom: json['copied_from'] == null
           ? null
           : (json['copied_from'] as num).toInt(),
-    limit: json['limit'] is num ? (json['limit'] as num).toInt() : null,
-    offset: json['offset'] is num ? (json['offset'] as num).toInt() : null,
+      limit: json['limit'] is num ? (json['limit'] as num).toInt() : null,
+      offset: json['offset'] is num ? (json['offset'] as num).toInt() : null,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,

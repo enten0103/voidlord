@@ -82,18 +82,15 @@ class UploadListPage extends GetView<UploadListController> {
                       sliver: SliverGrid(
                         gridDelegate:
                             const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 180,
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 12,
-                          childAspectRatio: 0.56,
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final b = controller.books[index];
-                            return _bookTile(context, b);
-                          },
-                          childCount: controller.books.length,
-                        ),
+                              maxCrossAxisExtent: 180,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.56,
+                            ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final b = controller.books[index];
+                          return _bookTile(context, b);
+                        }, childCount: controller.books.length),
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -117,8 +114,7 @@ class UploadListPage extends GetView<UploadListController> {
                             if (controller.noMore.value) {
                               return Text(
                                 '已加载全部 (${controller.books.length})',
-                                style:
-                                    Theme.of(context).textTheme.labelSmall,
+                                style: Theme.of(context).textTheme.labelSmall,
                               );
                             }
                             return OutlinedButton.icon(

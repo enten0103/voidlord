@@ -64,15 +64,20 @@ class UploadListController extends GetxController {
   }
 
   Future<void> _appendItems(List<MediaLibraryItemDto> items) async {
-    final bookIds = items.where((e) => e.book != null).map((e) => e.book!.id).toList();
+    final bookIds = items
+        .where((e) => e.book != null)
+        .map((e) => e.book!.id)
+        .toList();
     if (bookIds.isEmpty) return;
-    final fetched = await Future.wait(bookIds.map((bid) async {
-      try {
-        return await api.getBook(bid);
-      } catch (_) {
-        return null;
-      }
-    }));
+    final fetched = await Future.wait(
+      bookIds.map((bid) async {
+        try {
+          return await api.getBook(bid);
+        } catch (_) {
+          return null;
+        }
+      }),
+    );
     books.addAll(fetched.whereType<BookDto>());
   }
 

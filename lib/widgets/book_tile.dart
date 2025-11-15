@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 /// 通用书籍展示组件：封面 + 标题 + 作者。
-/// cover 支持：绝对 URL 或对象 key（将拼接为 http://localhost:9000/voidlord/<key>）。
 class BookTile extends StatelessWidget {
   final String title;
   final String author;
@@ -34,19 +33,17 @@ class BookTile extends StatelessWidget {
             title.isEmpty ? '未命名' : title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(fontWeight: FontWeight.w600),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           Text(
             author.isEmpty ? '-' : author,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: Colors.black54),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: Colors.black54),
           ),
         ],
       ),

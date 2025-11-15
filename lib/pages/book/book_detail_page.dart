@@ -62,11 +62,6 @@ class BookDetailPage extends GetView<BookDetailController> {
           flexibleSpace: DragToMoveArea(child: SizedBox.expand()),
           actions: [
             IconButton(
-              tooltip: '编辑',
-              icon: const Icon(Icons.edit),
-              onPressed: () => Get.toNamed('/upload/edit', arguments: book.id),
-            ),
-            IconButton(
               tooltip: '收藏到媒体库',
               icon: const Icon(Icons.favorite_border),
               onPressed: () async {

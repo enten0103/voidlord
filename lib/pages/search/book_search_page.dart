@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../widgets/book_tile.dart';
 // book_models.dart 未直接引用具体类型（仅通过 BookSearchController.results 访问），无需导入
 import '../../widgets/side_baner.dart';
+import '../../routes/app_routes.dart';
 import 'book_search_controller.dart';
 import '../../apis/books_api.dart';
 
@@ -19,12 +20,16 @@ class BookSearchPage extends GetView<BookSearchController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _simpleSearchBar(context),
-              Obx(() => controller.advancedMode.value
-                  ? const SizedBox(height: 24)
-                  : const SizedBox()),
-              Obx(() => controller.advancedMode.value
-                  ? _advancedPanelReactive(context)
-                  : const SizedBox()),
+              Obx(
+                () => controller.advancedMode.value
+                    ? const SizedBox(height: 24)
+                    : const SizedBox(),
+              ),
+              Obx(
+                () => controller.advancedMode.value
+                    ? _advancedPanelReactive(context)
+                    : const SizedBox(),
+              ),
               const SizedBox(height: 20),
               _resultsSectionReactive(context, constraints.maxWidth),
             ],
@@ -44,13 +49,15 @@ class BookSearchPage extends GetView<BookSearchController> {
           children: [
             Text('条件 (AND)', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(width: 12),
-            Obx(() => FilledButton.icon(
-                  onPressed: controller.loading.value
-                      ? null
-                      : () => controller.addCondition(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('添加条件'),
-                )),
+            Obx(
+              () => FilledButton.icon(
+                onPressed: controller.loading.value
+                    ? null
+                    : () => controller.addCondition(),
+                icon: const Icon(Icons.add),
+                label: const Text('添加条件'),
+              ),
+            ),
             const Spacer(),
             Obx(() {
               if (controller.conditions.isEmpty) return const SizedBox();
@@ -81,55 +88,58 @@ class BookSearchPage extends GetView<BookSearchController> {
         }),
         const SizedBox(height: 12),
         // 搜索操作区：加载态和 limit 修改仅影响本行
-        Obx(() => Row(
-              children: [
-                FilledButton.icon(
-                  onPressed: controller.searching.value
-                      ? null
-                      : () async {
-                          await controller.search(reset: true);
-                          if (controller.results.isEmpty &&
-                              controller.error.value == null) {
-                            SideBanner.warning('无匹配结果');
-                          }
-                        },
-                  icon: const Icon(Icons.tune),
-                  label: const Text('按条件搜索'),
+        Obx(
+          () => Row(
+            children: [
+              FilledButton.icon(
+                onPressed: controller.searching.value
+                    ? null
+                    : () async {
+                        await controller.search(reset: true);
+                        if (controller.results.isEmpty &&
+                            controller.error.value == null) {
+                          SideBanner.warning('无匹配结果');
+                        }
+                      },
+                icon: const Icon(Icons.tune),
+                label: const Text('按条件搜索'),
+              ),
+              const SizedBox(width: 12),
+              if (controller.loading.value)
+                const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                const SizedBox(width: 12),
-                if (controller.loading.value)
-                  const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                const Spacer(),
-                SizedBox(
-                  width: 80,
-                  child: TextField(
-                    enabled: !controller.loading.value,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: '每页'),
-                    controller: TextEditingController(
-                      text: controller.limit.value.toString(),
-                    )
-                      ..selection = TextSelection.fromPosition(
-                        TextPosition(
-                          offset: controller.limit.value.toString().length,
+              const Spacer(),
+              SizedBox(
+                width: 80,
+                child: TextField(
+                  enabled: !controller.loading.value,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: '每页'),
+                  controller:
+                      TextEditingController(
+                          text: controller.limit.value.toString(),
+                        )
+                        ..selection = TextSelection.fromPosition(
+                          TextPosition(
+                            offset: controller.limit.value.toString().length,
+                          ),
                         ),
-                      ),
-                    onSubmitted: (v) {
-                      final n = int.tryParse(v.trim());
-                      if (n != null && n > 0 && n <= 100) {
-                        controller.limit.value = n;
-                      } else {
-                        SideBanner.warning('范围 1~100');
-                      }
-                    },
-                  ),
+                  onSubmitted: (v) {
+                    final n = int.tryParse(v.trim());
+                    if (n != null && n > 0 && n <= 100) {
+                      controller.limit.value = n;
+                    } else {
+                      SideBanner.warning('范围 1~100');
+                    }
+                  },
                 ),
-              ],
-            )),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -266,7 +276,12 @@ class BookSearchPage extends GetView<BookSearchController> {
           if (k == 'COVER') cover = t.value;
           // CLASS 目前用于搜索匹配，不在网格展示；如需显示可扩展 BookTile。
         }
-        return BookTile(title: title, author: author, cover: cover);
+        return BookTile(
+          title: title,
+          author: author,
+          cover: cover,
+          onTap: () => Get.toNamed(Routes.bookDetail, arguments: b.id),
+        );
       },
     );
   }
@@ -282,8 +297,9 @@ class BookSearchPage extends GetView<BookSearchController> {
           if (controller.hasMore.value)
             Center(
               child: FilledButton(
-                onPressed:
-                    controller.loading.value ? null : () => controller.loadMore(),
+                onPressed: controller.loading.value
+                    ? null
+                    : () => controller.loadMore(),
                 child: const Text('加载更多'),
               ),
             ),
@@ -302,9 +318,7 @@ class BookSearchPage extends GetView<BookSearchController> {
               padding: const EdgeInsets.only(top: 12.0),
               child: Text(
                 controller.error.value!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
             ),
         ],

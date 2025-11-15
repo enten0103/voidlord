@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../widgets/book_tile.dart';
 // book_models.dart 未直接引用具体类型（仅通过 BookSearchController.results 访问），无需导入
 import '../../widgets/side_baner.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/adaptive_book_grid.dart';
 import 'book_search_controller.dart';
 import '../../apis/books_api.dart';
 
@@ -252,37 +252,9 @@ class BookSearchPage extends GetView<BookSearchController> {
       }
       return const SizedBox();
     }
-    final columns = _computeColumns(maxWidth);
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: controller.results.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.72,
-      ),
-      itemBuilder: (ctx, i) {
-        final b = controller.results[i];
-        // 提取标签（大小写兼容），并支持封面展示。
-        String title = '';
-        String author = '';
-        String? cover;
-        for (final t in b.tags) {
-          final k = t.key.toUpperCase();
-          if (k == 'TITLE') title = t.value;
-          if (k == 'AUTHOR') author = t.value;
-          if (k == 'COVER') cover = t.value;
-          // CLASS 目前用于搜索匹配，不在网格展示；如需显示可扩展 BookTile。
-        }
-        return BookTile(
-          title: title,
-          author: author,
-          cover: cover,
-          onTap: () => Get.toNamed(Routes.bookDetail, arguments: b.id),
-        );
-      },
+    return AdaptiveBookGrid(
+      books: controller.results,
+      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
     );
   }
 
@@ -326,12 +298,7 @@ class BookSearchPage extends GetView<BookSearchController> {
     });
   }
 
-  int _computeColumns(double maxWidth) {
-    if (maxWidth < 520) return 2;
-    if (maxWidth < 720) return 3;
-    if (maxWidth < 1024) return 4;
-    return 5;
-  }
+  // _computeColumns 已被自适应网格组件内置，保留占位如后续需要不同策略可再添加。
 
   /// 候选列表使用独立 Obx 确保即时刷新
   Widget _suggestionsReactive(BuildContext context) {

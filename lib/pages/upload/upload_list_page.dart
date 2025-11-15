@@ -7,6 +7,7 @@ import 'upload_list_controller.dart';
 import '../../apis/client.dart';
 import '../../apis/books_api.dart';
 import '../../widgets/side_baner.dart';
+import '../../widgets/adaptive_book_grid.dart';
 
 class UploadListPage extends GetView<UploadListController> {
   const UploadListPage({super.key});
@@ -77,21 +78,10 @@ class UploadListPage extends GetView<UploadListController> {
               : CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.all(12),
-                      sliver: SliverGrid(
-                        gridDelegate:
-                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 180,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.56,
-                            ),
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final b = controller.books[index];
-                          return _bookTile(context, b);
-                        }, childCount: controller.books.length),
-                      ),
+                    AdaptiveBookSliverGrid(
+                      books: controller.books,
+                      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
+                      onLongPress: (b) => _onTileLongPress(context, b),
                     ),
                     SliverToBoxAdapter(
                       child: Padding(
@@ -133,120 +123,67 @@ class UploadListPage extends GetView<UploadListController> {
     );
   }
 
-  Widget _bookTile(BuildContext context, BookDto b) {
-    final tagsMap = {for (final t in b.tags) t.key.toUpperCase(): t.value};
-    final cover = tagsMap['COVER'];
-    final title = tagsMap['TITLE'] ?? '未命名';
-    final author = tagsMap['AUTHOR'] ?? '-';
-
-    return InkWell(
-      onTap: () => Get.toNamed(Routes.bookDetail, arguments: b.id),
-      onLongPress: () async {
-        final action = await showModalBottomSheet<String>(
-          context: context,
-          builder: (ctx) => SafeArea(
-            child: Wrap(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.edit),
-                  title: const Text('编辑'),
-                  onTap: () => Navigator.pop(ctx, 'edit'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.delete_outline),
-                  title: const Text('删除'),
-                  onTap: () => Navigator.pop(ctx, 'delete'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.close),
-                  title: const Text('取消'),
-                  onTap: () => Navigator.pop(ctx, 'cancel'),
-                ),
-              ],
+  void _onTileLongPress(BuildContext context, BookDto b) async {
+  // 标签解析逻辑已在网格组件中处理，这里不再使用本地变量，仅保留方法签名
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('编辑'),
+              onTap: () => Navigator.pop(ctx, 'edit'),
             ),
-          ),
-        );
-        if (!context.mounted) return;
-        if (action == 'edit') {
-          Get.toNamed(Routes.uploadEdit, arguments: b.id);
-        } else if (action == 'delete') {
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (dctx) => AlertDialog(
-              title: const Text('确认删除'),
-              content: Text('删除图书 #${b.id}?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dctx, false),
-                  child: const Text('取消'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(dctx, true),
-                  child: const Text('删除'),
-                ),
-              ],
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('删除'),
+              onTap: () => Navigator.pop(ctx, 'delete'),
             ),
-          );
-          if (confirm == true) {
-            try {
-              final api = Get.find<Api>();
-              final ok = await api.deleteBook(b.id);
-              if (ok) {
-                controller.books.removeWhere((e) => e.id == b.id);
-                SideBanner.info('已删除 #${b.id}');
-              } else {
-                SideBanner.danger('删除失败');
-              }
-            } catch (e) {
-              SideBanner.danger('删除异常');
-            }
-          }
-        }
-      },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: cover == null
-                  ? Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: Icon(
-                          Icons.book,
-                          size: 32,
-                          color: Colors.black45,
-                        ),
-                      ),
-                    )
-                  : Image.network(
-                      'http://localhost:9000/voidlord/$cover',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Container(color: Colors.grey.shade300),
-                    ),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('取消'),
+              onTap: () => Navigator.pop(ctx, 'cancel'),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          Text(
-            author,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: Colors.black54),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+    if (!context.mounted) return;
+    if (action == 'edit') {
+      Get.toNamed(Routes.uploadEdit, arguments: b.id);
+    } else if (action == 'delete') {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (dctx) => AlertDialog(
+          title: const Text('确认删除'),
+          content: Text('删除图书 #${b.id}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dctx, false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dctx, true),
+              child: const Text('删除'),
+            ),
+          ],
+        ),
+      );
+      if (confirm == true) {
+        try {
+          final api = Get.find<Api>();
+          final ok = await api.deleteBook(b.id);
+          if (ok) {
+            controller.books.removeWhere((e) => e.id == b.id);
+            SideBanner.info('已删除 #${b.id}');
+          } else {
+            SideBanner.danger('删除失败');
+          }
+        } catch (e) {
+          SideBanner.danger('删除异常');
+        }
+      }
+    }
   }
 }

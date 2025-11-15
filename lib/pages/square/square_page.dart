@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/models/book_models.dart';
-import '../../widgets/book_tile.dart';
+import '../../widgets/adaptive_book_grid.dart';
+import '../../routes/app_routes.dart';
 import 'square_controller.dart';
 
 class SquarePage extends GetView<SquareController> {
@@ -27,100 +28,99 @@ class SquarePage extends GetView<SquareController> {
       }
       return RefreshIndicator(
         onRefresh: () async => controller.load(),
-        child: ListView(
-          padding: const EdgeInsets.all(12),
-          children: [
-            for (final sec in controller.sections) _sectionCard(context, sec),
-            if (controller.sections.isEmpty)
-              Text('暂无推荐分区', style: Theme.of(context).textTheme.bodySmall),
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              sliver: _mixedSectionsSliver(context),
+            ),
           ],
         ),
       );
     });
   }
 
-  Widget _sectionCard(BuildContext context, dynamic sec) {
-    final books = controller.booksForSection(sec.mediaLibraryId);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    sec.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (!sec.active)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Chip(
-                      label: const Text('未启用'),
-                      visualDensity: VisualDensity.compact,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
-              ],
-            ),
-            if (sec.description != null && sec.description!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 6.0),
+  /// 构建“推荐标题全宽 + 普通书籍网格”混合展示的自定义 Sliver
+  SliverMultiBoxAdaptorWidget _mixedSectionsSliver(BuildContext context) {
+    final secs = controller.sections;
+    if (secs.isEmpty) {
+      return SliverList(
+        delegate: SliverChildListDelegate([
+          Text('暂无推荐分区', style: Theme.of(context).textTheme.bodySmall),
+        ]),
+      );
+    }
+
+    // 将每个分区拆分为：Header(全宽) + Books(网格)
+    final children = <Widget>[];
+    for (final sec in secs) {
+      children.add(_sectionHeader(context, sec));
+      final books = controller.booksForSection(sec.mediaLibraryId);
+      children.add(_sectionBooksSliverWrapper(context, sec, books));
+    }
+    return SliverList(delegate: SliverChildListDelegate(children));
+  }
+
+  Widget _sectionHeader(BuildContext context, dynamic sec) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
                 child: Text(
-                  sec.description!,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  sec.title,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            const SizedBox(height: 12),
-            _booksGrid(context, books, sec.mediaLibraryId),
-          ],
-        ),
+              if (!sec.active)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Chip(
+                    label: const Text('未启用'),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+            ],
+          ),
+          if (sec.description != null && sec.description!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                sec.description!,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _booksGrid(BuildContext context, List<BookDto> books, int libraryId) {
-    if (libraryId == 0) {
-      return Text('未关联媒体库', style: Theme.of(context).textTheme.bodySmall);
-    }
+  Widget _sectionBooksSliverWrapper(
+    BuildContext context,
+    dynamic sec,
+    List<BookDto> books,
+  ) {
     if (controller.itemsLoading.value || controller.booksLoading.value) {
       return const SizedBox(
-        height: 48,
+        height: 56,
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
+    }
+    if (sec.mediaLibraryId == 0) {
+      return Text('未关联媒体库', style: Theme.of(context).textTheme.bodySmall);
     }
     if (books.isEmpty) {
       return Text('暂无书籍', style: Theme.of(context).textTheme.bodySmall);
     }
-    return GridView.extent(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      maxCrossAxisExtent: 180,
-      childAspectRatio: 0.56,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      children: [
-        for (final book in books)
-          BookTile(
-            title: _findTag(book, 'TITLE')?.value ?? '未命名',
-            author: _findTag(book, 'AUTHOR')?.value ?? '-',
-            cover: _findTag(book, 'COVER')?.value,
-            onTap: () => Get.toNamed('/book/${book.id}', arguments: book.id),
-          ),
-      ],
+    // 网格用自适应组件；这里在 SliverList 的 item 中嵌套一个不可滚动 GridView
+    return AdaptiveBookGrid(
+      books: books,
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
     );
-  }
-
-  TagDto? _findTag(BookDto book, String key) {
-    for (final t in book.tags) {
-      if (t.key == key) return t;
-    }
-    return null;
   }
 }

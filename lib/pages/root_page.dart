@@ -3,8 +3,7 @@ import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_list_page.dart';
-import 'root/square_controller.dart';
-import '../routes/app_routes.dart';
+import 'square/square_page.dart';
 import 'recommendations/recommendations_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
@@ -35,7 +34,7 @@ class RootPage extends GetView<RootController> {
       ];
       // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
       final pages = [
-        const _SquareTab(),
+        const SquarePage(),
         const _SearchTab(),
         const MediaLibrariesPage(),
         if (hasUpload) const UploadListPage(),
@@ -86,148 +85,6 @@ class RootPage extends GetView<RootController> {
         ],
         selectedIndex: i,
         onSelected: controller.switchTab,
-      );
-    });
-  }
-}
-
-class _SquareTab extends GetView<SquareController> {
-  const _SquareTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.loading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      if (controller.error.value != null) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(controller.error.value!),
-              const SizedBox(height: 12),
-              FilledButton(onPressed: controller.load, child: const Text('重试')),
-            ],
-          ),
-        );
-      }
-      return RefreshIndicator(
-        onRefresh: controller.load,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text('广场', style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 4),
-            Text('应用主体', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 16),
-            ...controller.sections.map(
-              (sec) => Card(
-                child: ListTile(
-                  title: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          sec.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (!sec.active)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Chip(
-                            label: const Text('未启用'),
-                            visualDensity: VisualDensity.compact,
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.surfaceVariant,
-                          ),
-                        ),
-                    ],
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        sec.mediaLibraryName ?? '未关联媒体库',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      if (sec.description != null &&
-                          sec.description!.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Text(
-                            sec.description!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                      // 条目列表
-                      Builder(builder: (context) {
-                        final items = controller.itemsFor(sec.mediaLibraryId);
-                        if (items.isEmpty) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              sec.mediaLibraryId == 0
-                                  ? '未关联媒体库'
-                                  : '暂无条目',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          );
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '条目(${items.length})',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall,
-                              ),
-                              const SizedBox(height: 4),
-                              Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: items.map((it) {
-                                  final bookId = it.book?.id;
-                                  final childId = it.childLibrary?.id;
-                                  final label = bookId != null
-                                      ? '书籍#${bookId}'
-                                      : childId != null
-                                          ? '子库#${childId}'
-                                          : '条目#${it.id}';
-                                  return Chip(
-                                    label: Text(label),
-                                    visualDensity: VisualDensity.compact,
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  trailing: IconButton(
-                    tooltip: '打开关联媒体库',
-                    icon: const Icon(Icons.open_in_new),
-                    onPressed: sec.mediaLibraryId == 0
-                        ? null
-                        : () => Get.toNamed(
-                            '${Routes.mediaLibraryDetail}/${sec.mediaLibraryId}',
-                            arguments: sec.mediaLibraryId,
-                          ),
-                  ),
-                ),
-              ),
-            ),
-            if (controller.sections.isEmpty)
-              Text('暂无推荐分区', style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
       );
     });
   }

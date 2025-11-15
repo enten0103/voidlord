@@ -135,19 +135,15 @@ class BookSearchController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 输入自动搜索（防抖）
+    // 输入防抖，仅处理清空；不自动搜索，搜索由点击候选触发
     debounce<String>(simpleQuery, (val) async {
       final q = val.trim();
       if (q.isEmpty) {
-        // 清空结果状态
         results.clear();
         total.value = null;
         offset.value = 0;
         hasMore.value = false;
-        return;
       }
-      // 自动按当前选中标签搜索
-      await searchMatchKey(selectedSimpleKey.value, reset: true);
-    }, time: const Duration(milliseconds: 450));
+    }, time: const Duration(milliseconds: 200));
   }
 }

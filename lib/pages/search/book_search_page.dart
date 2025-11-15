@@ -190,7 +190,7 @@ class BookSearchPage extends GetView<BookSearchController> {
           controller: queryCtrl,
           enabled: !controller.loading.value,
           decoration: const InputDecoration(
-            labelText: '输入关键字自动搜索 (默认标题)',
+            labelText: '输入关键字，点击下方候选开始搜索',
             prefixIcon: Icon(Icons.search),
           ),
           onChanged: (v) => controller.simpleQuery.value = v,
@@ -314,34 +314,76 @@ class BookSearchPage extends GetView<BookSearchController> {
     if (q.isEmpty) return const SizedBox();
     final active = controller.selectedSimpleKey.value;
     final List<_Candidate> list = [
-      _Candidate(label: '标题', key: 'TITLE', display: '标题：$q', active: active == 'TITLE'),
-      _Candidate(label: '作者', key: 'AUTHOR', display: '作者：$q', active: active == 'AUTHOR'),
-      _Candidate(label: '分类', key: 'CLASS', display: '分类：$q', active: active == 'CLASS'),
-    ];
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(top: 4),
-      child: Column(
-        children: [
-          for (final c in list)
-            ListTile(
-              dense: true,
-              leading: Icon(c.active ? Icons.radio_button_checked : Icons.radio_button_unchecked),
-              title: Text(c.display, style: c.active ? const TextStyle(fontWeight: FontWeight.bold) : null),
-              onTap: controller.loading.value
-                  ? null
-                  : () async {
-                      controller.selectedSimpleKey.value = c.key; // 更新选中 KEY
-                      // 立即搜索（debounce 会忽略本次，因为我们主动调用）
-                      await controller.searchMatchKey(c.key, reset: true);
-                      if (controller.results.isEmpty &&
-                          controller.error.value == null) {
-                        SideBanner.info('未找到匹配结果');
-                      }
-                    },
-            ),
-        ],
+      _Candidate(
+        label: '标题',
+        key: 'TITLE',
+        display: '标题：$q',
+        active: active == 'TITLE',
       ),
+      _Candidate(
+        label: '作者',
+        key: 'AUTHOR',
+        display: '作者：$q',
+        active: active == 'AUTHOR',
+      ),
+      _Candidate(
+        label: '分类',
+        key: 'CLASS',
+        display: '分类：$q',
+        active: active == 'CLASS',
+      ),
+    ];
+    return Column(
+      children: [
+        for (final c in list)
+          InkWell(
+            onTap: controller.loading.value
+                ? null
+                : () async {
+                    controller.selectedSimpleKey.value = c.key;
+                    await controller.searchMatchKey(c.key, reset: true);
+                    if (controller.results.isEmpty &&
+                        controller.error.value == null) {
+                      SideBanner.info('未找到匹配结果');
+                    }
+                  },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              decoration: BoxDecoration(
+                color: c.active
+                    ? Theme.of(context).colorScheme.primary.withOpacity(0.10)
+                    : Colors.transparent,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 0.7,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    c.active ? Icons.check_circle : Icons.circle_outlined,
+                    size: 18,
+                    color: c.active
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).iconTheme.color,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      c.display,
+                      style: c.active
+                          ? const TextStyle(fontWeight: FontWeight.w600)
+                          : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -351,5 +393,10 @@ class _Candidate {
   final String key; // 用于后端搜索的 KEY
   final String display; // 展示内容
   final bool active; // 是否为当前选中
-  _Candidate({required this.label, required this.key, required this.display, this.active = false});
+  _Candidate({
+    required this.label,
+    required this.key,
+    required this.display,
+    this.active = false,
+  });
 }

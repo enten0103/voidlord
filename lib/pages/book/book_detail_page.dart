@@ -178,6 +178,8 @@ class BookDetailPage extends GetView<BookDetailController> {
               ).textTheme.titleMedium?.copyWith(color: Colors.black54),
             ),
           ),
+        const SizedBox(height: 12),
+        _ratingSection(context),
         if (description != null && description.trim().isNotEmpty) ...[
           const SizedBox(height: 12),
           Text('简介', style: Theme.of(context).textTheme.titleSmall),
@@ -242,6 +244,8 @@ class BookDetailPage extends GetView<BookDetailController> {
           _metaLine('创建时间', book.createdAt!.toLocal().toString()),
         if (book.updatedAt != null)
           _metaLine('更新时间', book.updatedAt!.toLocal().toString()),
+        const SizedBox(height: 18),
+        _ratingSection(Get.context),
       ],
     );
   }
@@ -262,5 +266,66 @@ class BookDetailPage extends GetView<BookDetailController> {
         ],
       ),
     );
+  }
+
+  Widget _ratingSection(BuildContext? context) {
+    if (context == null) return const SizedBox();
+    return Obx(() {
+      final loading = controller.ratingLoading.value;
+      final my = controller.myRating.value;
+      final avg = controller.avgRating.value;
+      final count = controller.ratingCount.value;
+      final err = controller.ratingError.value;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('评分', style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              for (int i = 1; i <= 5; i++) ...[
+                IconButton(
+                  tooltip: '评分 $i',
+                  onPressed: loading ? null : () => controller.rate(i),
+                  icon: Icon(
+                    i <= my ? Icons.star : Icons.star_border,
+                    color: i <= my
+                        ? Theme.of(context).colorScheme.secondary
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+              if (loading)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+            Text(
+              count > 0
+                  ? '平均 ${avg.toStringAsFixed(1)} / 5 · 共 $count 条评分'
+                  : '尚无评分，点击星星进行评分',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          if (err != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                err,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+              ),
+            ),
+        ],
+      );
+    });
   }
 }

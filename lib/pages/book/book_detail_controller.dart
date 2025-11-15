@@ -10,6 +10,12 @@ class BookDetailController extends GetxController {
   final deleting = false.obs;
   final error = RxnString();
   final book = Rxn<BookDto>();
+  // Rating state
+  final ratingLoading = false.obs;
+  final ratingError = RxnString();
+  final myRating = 0.obs; // 0 表示未评分
+  final avgRating = 0.0.obs;
+  final ratingCount = 0.obs;
 
   Api get api => Get.find<Api>();
 
@@ -46,10 +52,52 @@ class BookDetailController extends GetxController {
     try {
       final data = await api.getBook(bookId!);
       book.value = data;
+      await loadRating();
     } catch (e) {
       error.value = '加载失败';
     } finally {
       loading.value = false;
+    }
+  }
+
+  Future<void> loadRating() async {
+    if (bookId == null) return;
+    ratingLoading.value = true;
+    ratingError.value = null;
+    try {
+      final r = await api.getBookRating(bookId!);
+      if (r != null) {
+        myRating.value = r.myRating;
+        avgRating.value = r.avg;
+        ratingCount.value = r.count;
+      }
+    } catch (e) {
+      ratingError.value = '评分加载失败';
+    } finally {
+      ratingLoading.value = false;
+    }
+  }
+
+  Future<void> rate(int score) async {
+    if (bookId == null) return;
+    if (score < 1 || score > 5) return;
+    ratingLoading.value = true;
+    try {
+      final r = await api.rateBook(bookId!, score);
+      myRating.value = r.myRating;
+      avgRating.value = r.avg;
+      ratingCount.value = r.count;
+  SideBanner.info('评分成功: ${r.myRating}');
+    } catch (e) {
+      if (e is BooksApiError && e.statusCode == 401) {
+        SideBanner.warning('请先登录后评分');
+      } else if (e is BooksApiError) {
+        SideBanner.danger(e.message);
+      } else {
+        SideBanner.danger('评分失败');
+      }
+    } finally {
+      ratingLoading.value = false;
     }
   }
 

@@ -92,7 +92,8 @@ extension BooksApi on Api {
   // 删除图书
   Future<bool> deleteBook(int id) async {
     final Response res = await client.delete('/books/$id');
-    if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+    if ((res.statusCode == 200 || res.statusCode == 201) &&
+        res.data is Map<String, dynamic>) {
       final map = res.data as Map<String, dynamic>;
       return map['ok'] == true;
     }
@@ -138,7 +139,7 @@ extension BooksApi on Api {
     if (limit != null) body['limit'] = limit;
     if (offset != null) body['offset'] = offset;
     final Response res = await client.post('/books/search', data: body);
-    if (res.statusCode == 200) {
+    if (res.statusCode == 201) {
       // 分页对象
       if (res.data is Map<String, dynamic>) {
         final map = res.data as Map<String, dynamic>;
@@ -167,7 +168,6 @@ extension BooksApi on Api {
     if (res.statusCode == 400) {
       throw BooksApiError('搜索参数不合法', statusCode: 400);
     }
-    print(res.data);
     throw BooksApiError('搜索失败', statusCode: res.statusCode);
   }
 
@@ -189,6 +189,24 @@ extension BooksApi on Api {
         throw BooksApiError('评分不合法', statusCode: 409);
     }
     throw BooksApiError('评分失败', statusCode: res.statusCode);
+  }
+
+  // 获取评分 GET /books/:id/rating (若后端存在此端点) 可选；返回 myRating=0 表示当前用户未评分
+  Future<RatingResponse?> getBookRating(int id) async {
+    try {
+      final Response res = await client.get('/books/$id/rating');
+      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+        return RatingResponse.fromJson(res.data as Map<String, dynamic>);
+      }
+      if (res.statusCode == 404) {
+        // 评分不存在或图书不存在；返回 null 由上层决定是否显示
+        return null;
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+    return null;
   }
 
   // 顶层评论列表
@@ -320,11 +338,11 @@ class BookSearchCondition {
     required this.value,
   });
   Map<String, dynamic> toJson() => {
-        // 后端采用大写枚举风格 (e.g. TITLE / AUTHOR / COVER)，统一向上层发送大写
-        'target': target.toUpperCase(),
-        'op': op,
-        'value': value,
-      };
+    // 后端采用大写枚举风格 (e.g. TITLE / AUTHOR / COVER)，统一向上层发送大写
+    'target': target.toUpperCase(),
+    'op': op,
+    'value': value,
+  };
 }
 
 // 搜索响应统一封装（分页或非分页）

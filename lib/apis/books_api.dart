@@ -122,6 +122,52 @@ extension BooksApi on Api {
     throw BooksApiError('获取推荐失败', statusCode: res.statusCode);
   }
 
+  /// 新标签条件搜索 POST /books/search
+  /// 兼容两种响应：
+  /// 1) 未分页: 直接返回 List<BookDto>
+  /// 2) 分页: 返回 { total, limit, offset, items: [...] }
+  Future<BookSearchResponse> searchBooks({
+    required List<BookSearchCondition> conditions,
+    int? limit,
+    int? offset,
+  }) async {
+    final body = <String, dynamic>{};
+    if (conditions.isNotEmpty) {
+      body['conditions'] = conditions.map((e) => e.toJson()).toList();
+    }
+    if (limit != null) body['limit'] = limit;
+    if (offset != null) body['offset'] = offset;
+    final Response res = await client.post('/books/search', data: body);
+    if (res.statusCode == 200) {
+      // 分页对象
+      if (res.data is Map<String, dynamic>) {
+        final map = res.data as Map<String, dynamic>;
+        final items = (map['items'] as List? ?? [])
+            .whereType<Map>()
+            .map((e) => BookDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return BookSearchResponse(
+          items: items,
+          total: (map['total'] is num) ? (map['total'] as num).toInt() : null,
+          limit: (map['limit'] is num) ? (map['limit'] as num).toInt() : null,
+          offset: (map['offset'] is num) ? (map['offset'] as num).toInt() : null,
+        );
+      }
+      // 直接数组
+      if (res.data is List) {
+        final list = (res.data as List)
+            .whereType<Map>()
+            .map((e) => BookDto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+        return BookSearchResponse(items: list);
+      }
+    }
+    if (res.statusCode == 400) {
+      throw BooksApiError('搜索参数不合法', statusCode: 400);
+    }
+    throw BooksApiError('搜索失败', statusCode: res.statusCode);
+  }
+
   // 评分 POST /books/:id/rating { score: 1-5 }
   Future<RatingResponse> rateBook(int id, int score) async {
     final Response res = await client.post(
@@ -258,4 +304,32 @@ extension BooksApi on Api {
     }
     throw BooksApiError('删除评论失败', statusCode: res.statusCode);
   }
+}
+
+// 搜索条件模型
+class BookSearchCondition {
+  final String target; // tag key
+  final String op; // eq | neq | match
+  final String value;
+  BookSearchCondition({required this.target, required this.op, required this.value});
+  Map<String, dynamic> toJson() => {
+        'target': target,
+        'op': op,
+        'value': value,
+      };
+}
+
+// 搜索响应统一封装（分页或非分页）
+class BookSearchResponse {
+  final List<BookDto> items;
+  final int? total;
+  final int? limit;
+  final int? offset;
+  bool get paged => total != null && limit != null && offset != null;
+  BookSearchResponse({
+    required this.items,
+    this.total,
+    this.limit,
+    this.offset,
+  });
 }

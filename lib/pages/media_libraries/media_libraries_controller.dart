@@ -10,7 +10,8 @@ class MediaLibrariesController extends GetxController {
   void onInit() {
     super.onInit();
     service = Get.find<MediaLibrariesService>();
-    service.loadAll();
+    // 使用统一初始化保障，避免重复完整加载
+    service.ensureInitialized();
   }
 
   RxList<MediaLibraryDto> get myLibraries => service.myLibraries;

@@ -3,6 +3,7 @@ import '../../apis/client.dart';
 import '../../apis/books_api.dart';
 import '../../models/book_models.dart';
 import '../../widgets/side_baner.dart';
+import '../../services/media_libraries_service.dart';
 
 class BookDetailController extends GetxController {
   final loading = false.obs;
@@ -17,6 +18,11 @@ class BookDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // 确保媒体库服务已初始化（收藏操作依赖）
+    try {
+      final libs = Get.find<MediaLibrariesService>();
+      libs.ensureInitialized();
+    } catch (_) {}
     int? id;
     final paramId = Get.parameters['id'];
     if (paramId != null) id = int.tryParse(paramId);

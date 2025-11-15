@@ -22,7 +22,11 @@ class RecommendationsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    load();
+    // 先确保媒体库服务已初始化，再加载分区
+    Future.microtask(() async {
+      await libs.ensureInitialized();
+      await load();
+    });
   }
 
   Future<void> load() async {
@@ -183,11 +187,12 @@ class RecommendationsController extends GetxController {
     if (!orderDirty.value) return;
     saving.value = true;
     try {
-  // 重排时提交全部分区的当前顺序
-  final orderedIds = (sections.toList()
-    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
-      .map((e) => e.id)
-      .toList();
+      // 重排时提交全部分区的当前顺序
+      final orderedIds =
+          (sections.toList()
+                ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
+              .map((e) => e.id)
+              .toList();
       final refreshed = await api.reorderSections(orderedIds);
       sections.assignAll(refreshed);
       sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));

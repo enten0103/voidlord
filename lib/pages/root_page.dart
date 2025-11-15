@@ -162,6 +162,53 @@ class _SquareTab extends GetView<SquareController> {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ),
+                      // 条目列表
+                      Builder(builder: (context) {
+                        final items = controller.itemsFor(sec.mediaLibraryId);
+                        if (items.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              sec.mediaLibraryId == 0
+                                  ? '未关联媒体库'
+                                  : '暂无条目',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          );
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '条目(${items.length})',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: items.map((it) {
+                                  final bookId = it.book?.id;
+                                  final childId = it.childLibrary?.id;
+                                  final label = bookId != null
+                                      ? '书籍#${bookId}'
+                                      : childId != null
+                                          ? '子库#${childId}'
+                                          : '条目#${it.id}';
+                                  return Chip(
+                                    label: Text(label),
+                                    visualDensity: VisualDensity.compact,
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                     ],
                   ),
                   trailing: IconButton(

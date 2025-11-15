@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:voidlord/models/book_models.dart';
 import '../../widgets/adaptive_book_grid.dart';
 import '../../routes/app_routes.dart';
 import 'square_controller.dart';
@@ -32,7 +31,7 @@ class SquarePage extends GetView<SquareController> {
           slivers: [
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              sliver: _mixedSectionsSliver(context),
+              sliver: _lazySectionsSliver(context),
             ),
           ],
         ),
@@ -40,8 +39,8 @@ class SquarePage extends GetView<SquareController> {
     });
   }
 
-  /// 构建“推荐标题全宽 + 普通书籍网格”混合展示的自定义 Sliver
-  SliverMultiBoxAdaptorWidget _mixedSectionsSliver(BuildContext context) {
+  /// 懒加载分区：使用 SliverChildBuilderDelegate，仅构建可见 header 和其书籍网格
+  SliverMultiBoxAdaptorWidget _lazySectionsSliver(BuildContext context) {
     final secs = controller.sections;
     if (secs.isEmpty) {
       return SliverList(
@@ -50,15 +49,24 @@ class SquarePage extends GetView<SquareController> {
         ]),
       );
     }
-
-    // 将每个分区拆分为：Header(全宽) + Books(网格)
-    final children = <Widget>[];
-    for (final sec in secs) {
-      children.add(_sectionHeader(context, sec));
-      final books = controller.booksForSection(sec.mediaLibraryId);
-      children.add(_sectionBooksSliverWrapper(context, sec, books));
-    }
-    return SliverList(delegate: SliverChildListDelegate(children));
+    final itemCount = secs.length * 2; // header + grid per section
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((ctx, index) {
+        final secIndex = index ~/ 2;
+        final isHeader = index % 2 == 0;
+        final sec = secs[secIndex];
+        if (isHeader) {
+          // 触发库初始化（只在 header 首次构建时）
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            controller.ensureLibraryInitialized(sec.mediaLibraryId);
+          });
+          return _sectionHeader(context, sec);
+        } else {
+          // 使用 Obx 包裹书籍区域以响应 libraryLoading/HasMore 等变化
+          return Obx(() => _sectionBooksSliverWrapper(context, sec));
+        }
+      }, childCount: itemCount),
+    );
   }
 
   Widget _sectionHeader(BuildContext context, dynamic sec) {
@@ -102,25 +110,52 @@ class SquarePage extends GetView<SquareController> {
   Widget _sectionBooksSliverWrapper(
     BuildContext context,
     dynamic sec,
-    List<BookDto> books,
   ) {
-    if (controller.itemsLoading.value || controller.booksLoading.value) {
+    final libId = sec.mediaLibraryId;
+    if (libId == 0) {
+      return Text('未关联媒体库', style: Theme.of(context).textTheme.bodySmall);
+    }
+    final books = controller.booksForSection(libId);
+    final loading = controller.libraryLoading[libId] == true && books.isEmpty;
+    if (loading) {
       return const SizedBox(
         height: 56,
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
-    if (sec.mediaLibraryId == 0) {
-      return Text('未关联媒体库', style: Theme.of(context).textTheme.bodySmall);
-    }
     if (books.isEmpty) {
       return Text('暂无书籍', style: Theme.of(context).textTheme.bodySmall);
     }
-    // 网格用自适应组件；这里在 SliverList 的 item 中嵌套一个不可滚动 GridView
-    return AdaptiveBookGrid(
-      books: books,
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
-      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
+    final hasMore = controller.libraryHasMore[libId] == true;
+    final loadingMore =
+        controller.libraryLoading[libId] == true && books.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AdaptiveBookGrid(
+          books: books,
+          padding: const EdgeInsets.only(top: 8, bottom: 8),
+          onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
+        ),
+        if (hasMore)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: loadingMore
+                  ? const SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: () => controller.loadMoreLibrary(libId),
+                      icon: const Icon(Icons.more_horiz),
+                      label: const Text('加载更多'),
+                    ),
+            ),
+          ),
+      ],
     );
   }
 }

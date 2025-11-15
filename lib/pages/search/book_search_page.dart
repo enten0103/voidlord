@@ -13,32 +13,6 @@ class BookSearchPage extends GetView<BookSearchController> {
   Widget build(BuildContext context) {
     return Obx(() {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('图书搜索'),
-          actions: [
-            TextButton(
-              onPressed: controller.loading.value
-                  ? null
-                  : () => controller.advancedMode.toggle(),
-              child: Text(
-                controller.advancedMode.value ? '收起高级' : '高级搜索',
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-            IconButton(
-              tooltip: '清空结果',
-              onPressed: controller.loading.value
-                  ? null
-                  : () {
-                      controller.results.clear();
-                      controller.total.value = null;
-                      controller.offset.value = 0;
-                      controller.hasMore.value = false;
-                    },
-              icon: const Icon(Icons.clear_all),
-            ),
-          ],
-        ),
         body: LayoutBuilder(
           builder: (ctx, constraints) => SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -48,7 +22,7 @@ class BookSearchPage extends GetView<BookSearchController> {
                 _simpleSearchBar(context),
                 if (controller.advancedMode.value) ...[
                   const SizedBox(height: 24),
-                  _advancedPanel(context),
+                  _advancedPanelReactive(context),
                 ],
                 const SizedBox(height: 20),
                 _resultsGrid(context, constraints.maxWidth),
@@ -90,90 +64,102 @@ class BookSearchPage extends GetView<BookSearchController> {
     });
   }
 
-  Widget _advancedPanel(BuildContext context) {
+  /// 高级面板：采用细粒度 Obx，避免整块重建导致输入抖动
+  Widget _advancedPanelReactive(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 头部操作行：仅按钮和清空状态需要响应
         Row(
           children: [
             Text('条件 (AND)', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(width: 12),
-            FilledButton.icon(
-              onPressed: controller.loading.value
-                  ? null
-                  : () => controller.addCondition(),
-              icon: const Icon(Icons.add),
-              label: const Text('添加条件'),
-            ),
+            Obx(() => FilledButton.icon(
+                  onPressed: controller.loading.value
+                      ? null
+                      : () => controller.addCondition(),
+                  icon: const Icon(Icons.add),
+                  label: const Text('添加条件'),
+                )),
             const Spacer(),
-            if (controller.conditions.isNotEmpty)
-              TextButton(
+            Obx(() {
+              if (controller.conditions.isEmpty) return const SizedBox();
+              return TextButton(
                 onPressed: controller.loading.value
                     ? null
                     : () => controller.conditions.clear(),
                 child: const Text('清空'),
-              ),
+              );
+            }),
           ],
         ),
         const SizedBox(height: 8),
-        if (controller.conditions.isEmpty)
-          Text(
-            '未添加条件：后端会返回全部书籍（可能很多），建议至少添加一个。',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        for (int i = 0; i < controller.conditions.length; i++)
-          _conditionRow(context, i, controller.conditions[i]),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            FilledButton.icon(
-              onPressed: controller.searching.value
-                  ? null
-                  : () async {
-                      await controller.search(reset: true);
-                      if (controller.results.isEmpty &&
-                          controller.error.value == null) {
-                        SideBanner.warning('无匹配结果');
-                      }
-                    },
-              icon: const Icon(Icons.tune),
-              label: const Text('按条件搜索'),
+        // 条件列表：单独监听，减少与头部/尾部耦合
+        Obx(() {
+          if (controller.conditions.isEmpty) {
+            return Text(
+              '未添加条件：后端会返回全部书籍（可能很多），建议至少添加一个。',
+              style: Theme.of(context).textTheme.bodySmall,
+            );
+          }
+          return Column(
+            children: List.generate(
+              controller.conditions.length,
+              (i) => _conditionRow(context, i, controller.conditions[i]),
             ),
-            const SizedBox(width: 12),
-            if (controller.loading.value)
-              const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            const Spacer(),
-            SizedBox(
-              width: 80,
-              child: TextField(
-                enabled: !controller.loading.value,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: '每页'),
-                controller:
-                    TextEditingController(
-                        text: controller.limit.value.toString(),
-                      )
+          );
+        }),
+        const SizedBox(height: 12),
+        // 搜索操作区：加载态和 limit 修改仅影响本行
+        Obx(() => Row(
+              children: [
+                FilledButton.icon(
+                  onPressed: controller.searching.value
+                      ? null
+                      : () async {
+                          await controller.search(reset: true);
+                          if (controller.results.isEmpty &&
+                              controller.error.value == null) {
+                            SideBanner.warning('无匹配结果');
+                          }
+                        },
+                  icon: const Icon(Icons.tune),
+                  label: const Text('按条件搜索'),
+                ),
+                const SizedBox(width: 12),
+                if (controller.loading.value)
+                  const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                const Spacer(),
+                SizedBox(
+                  width: 80,
+                  child: TextField(
+                    enabled: !controller.loading.value,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: '每页'),
+                    controller: TextEditingController(
+                      text: controller.limit.value.toString(),
+                    )
                       ..selection = TextSelection.fromPosition(
                         TextPosition(
                           offset: controller.limit.value.toString().length,
                         ),
                       ),
-                onSubmitted: (v) {
-                  final n = int.tryParse(v.trim());
-                  if (n != null && n > 0 && n <= 100) {
-                    controller.limit.value = n;
-                  } else {
-                    SideBanner.warning('范围 1~100');
-                  }
-                },
-              ),
-            ),
-          ],
-        ),
+                    onSubmitted: (v) {
+                      final n = int.tryParse(v.trim());
+                      if (n != null && n > 0 && n <= 100) {
+                        controller.limit.value = n;
+                      } else {
+                        SideBanner.warning('范围 1~100');
+                      }
+                    },
+                  ),
+                ),
+              ],
+            )),
       ],
     );
   }
@@ -188,13 +174,14 @@ class BookSearchPage extends GetView<BookSearchController> {
           decoration: InputDecoration(
             labelText: '输入关键字，点击候选搜索',
             prefixIcon: const Icon(Icons.search),
-            suffixIcon: Obx(() => TextButton(
-                  onPressed: controller.loading.value
-                      ? null
-                      : () => controller.advancedMode.toggle(),
-                  child: Text(
-                      controller.advancedMode.value ? '收起高级' : '高级搜索'),
-                )),
+            suffixIcon: Obx(
+              () => TextButton(
+                onPressed: controller.loading.value
+                    ? null
+                    : () => controller.advancedMode.toggle(),
+                child: Text(controller.advancedMode.value ? '收起高级' : '高级搜索'),
+              ),
+            ),
           ),
           onChanged: (v) {
             String raw = v;
@@ -358,7 +345,8 @@ class BookSearchPage extends GetView<BookSearchController> {
                   : () async {
                       controller.selectedSimpleKey.value = c.key;
                       // 回显候选内容到输入框并隐藏候选
-                      controller.simpleQuery.value = c.display; // 将展示文本写入（同步到 controller via ever）
+                      controller.simpleQuery.value =
+                          c.display; // 将展示文本写入（同步到 controller via ever）
                       controller.simpleSuggestionsVisible.value = false;
                       await controller.searchMatchKey(
                         c.key,

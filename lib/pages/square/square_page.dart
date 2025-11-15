@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/models/book_models.dart';
+import '../../widgets/book_tile.dart';
 import '../root/square_controller.dart';
 
 class SquarePage extends GetView<SquareController> {
@@ -32,8 +33,7 @@ class SquarePage extends GetView<SquareController> {
         child: ListView(
           padding: const EdgeInsets.all(12),
           children: [
-            for (final sec in controller.sections)
-              _sectionCard(context, sec),
+            for (final sec in controller.sections) _sectionCard(context, sec),
             if (controller.sections.isEmpty)
               Text('暂无推荐分区', style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -100,7 +100,6 @@ class SquarePage extends GetView<SquareController> {
     if (books.isEmpty) {
       return Text('暂无书籍', style: Theme.of(context).textTheme.bodySmall);
     }
-    // 与媒体库详情页面一致的竖向封面网格风格
     return GridView.extent(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
@@ -110,63 +109,20 @@ class SquarePage extends GetView<SquareController> {
       mainAxisSpacing: 12,
       children: [
         for (final book in books)
-          InkWell(
+          BookTile(
+            title: _findTag(book, 'TITLE')?.value ?? '未命名',
+            author: _findTag(book, 'AUTHOR')?.value ?? '-',
+            cover: _findTag(book, 'COVER')?.value,
             onTap: () => Get.toNamed('/book/${book.id}', arguments: book.id),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: _buildCover(_findTag(book, 'COVER')?.value),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _findTag(book, 'TITLE')?.value ?? '未命名',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  _findTag(book, 'AUTHOR')?.value ?? '-',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelSmall
-                      ?.copyWith(color: Colors.black54),
-                ),
-              ],
-            ),
           ),
       ],
     );
   }
+
   TagDto? _findTag(BookDto book, String key) {
     for (final t in book.tags) {
       if (t.key == key) return t;
     }
     return null;
-  }
-  Widget _buildCover(String? value) {
-    if (value == null) {
-      return Container(
-        color: Colors.grey.shade300,
-        child: const Center(
-          child: Icon(Icons.book, size: 32, color: Colors.black45),
-        ),
-      );
-    }
-    final isUrl = value.startsWith('http://') || value.startsWith('https://');
-    final src = isUrl ? value : 'http://localhost:9000/voidlord/$value';
-    return Image.network(
-      src,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300),
-    );
   }
 }

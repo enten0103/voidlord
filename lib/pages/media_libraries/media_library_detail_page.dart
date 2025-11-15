@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 import 'media_library_detail_controller.dart';
+import '../../widgets/book_tile.dart';
 
 class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
   const MediaLibraryDetailPage({super.key});
@@ -43,7 +44,12 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final b = controller.books[index];
-                  return _bookTile(context, b);
+                  return BookTile(
+                    title: b.title,
+                    author: b.author,
+                    cover: b.cover,
+                    onTap: () => Get.toNamed('/book/${b.id}', arguments: b.id),
+                  );
                 }, childCount: controller.books.length),
               ),
               if (controller.others.isNotEmpty) ...[
@@ -74,52 +80,5 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
     );
   }
 
-  Widget _bookTile(BuildContext context, BookTileData b) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: _buildCover(b.cover),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          b.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        Text(
-          b.author,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: Colors.black54),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCover(String? value) {
-    if (value == null) {
-      return Container(
-        color: Colors.grey.shade300,
-        child: const Center(
-          child: Icon(Icons.book, size: 32, color: Colors.black45),
-        ),
-      );
-    }
-    final isUrl = value.startsWith('http://') || value.startsWith('https://');
-    final src = isUrl ? value : 'http://localhost:9000/voidlord/$value';
-    return Image.network(
-      src,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300),
-    );
-  }
+  // _bookTile 与 _buildCover 已用 BookTile 替换
 }

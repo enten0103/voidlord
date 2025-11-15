@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'upload/upload_list_page.dart';
+import 'root/square_controller.dart';
+import '../routes/app_routes.dart';
 import 'recommendations/recommendations_page.dart';
 import 'permissions/permissions_page.dart';
 import 'media_libraries/media_libraries_page.dart';
@@ -89,22 +91,98 @@ class RootPage extends GetView<RootController> {
   }
 }
 
-class _SquareTab extends StatelessWidget {
+class _SquareTab extends GetView<SquareController> {
   const _SquareTab();
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text('广场', style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 8),
-          // 为了兼容现有测试，保留“应用主体”文案
-          Text('应用主体', style: Theme.of(context).textTheme.bodyLarge),
-        ],
-      ),
-    );
+    return Obx(() {
+      if (controller.loading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (controller.error.value != null) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(controller.error.value!),
+              const SizedBox(height: 12),
+              FilledButton(onPressed: controller.load, child: const Text('重试')),
+            ],
+          ),
+        );
+      }
+      return RefreshIndicator(
+        onRefresh: controller.load,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text('广场', style: Theme.of(context).textTheme.headlineMedium),
+            const SizedBox(height: 4),
+            Text('应用主体', style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: 16),
+            ...controller.sections.map(
+              (sec) => Card(
+                child: ListTile(
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          sec.title,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (!sec.active)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Chip(
+                            label: const Text('未启用'),
+                            visualDensity: VisualDensity.compact,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.surfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sec.mediaLibraryName ?? '未关联媒体库',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      if (sec.description != null &&
+                          sec.description!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            sec.description!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    tooltip: '打开关联媒体库',
+                    icon: const Icon(Icons.open_in_new),
+                    onPressed: sec.mediaLibraryId == 0
+                        ? null
+                        : () => Get.toNamed(
+                            '${Routes.mediaLibraryDetail}/${sec.mediaLibraryId}',
+                            arguments: sec.mediaLibraryId,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+            if (controller.sections.isEmpty)
+              Text('暂无推荐分区', style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      );
+    });
   }
 }
 

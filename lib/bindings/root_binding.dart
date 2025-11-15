@@ -6,6 +6,7 @@ import '../controllers/root_controller.dart';
 import '../pages/permissions/permissions_controller.dart';
 import '../pages/profile/profile_controller.dart';
 import '../services/media_libraries_service.dart';
+import 'package:voidlord/pages/root/square_controller.dart';
 
 class RootBinding extends Bindings {
   @override
@@ -17,5 +18,6 @@ class RootBinding extends Bindings {
     Get.lazyPut<MediaLibrariesController>(() => MediaLibrariesController());
     Get.lazyPut<UploadListController>(() => UploadListController());
     Get.lazyPut<RecommendationsController>(() => RecommendationsController());
+    Get.lazyPut<SquareController>(() => SquareController());
   }
 }

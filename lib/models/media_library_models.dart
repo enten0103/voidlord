@@ -10,6 +10,8 @@ class MediaLibraryDto {
   final List<MediaLibraryItemDto> items;
   final List<LibraryTagDto> tags;
   final int? copiedFrom; // 复制来源 id
+  final int? limit; // 分页模式下的limit
+  final int? offset; // 分页模式下的offset
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -25,6 +27,8 @@ class MediaLibraryDto {
     required this.items,
     required this.tags,
     required this.copiedFrom,
+    required this.limit,
+    required this.offset,
     this.createdAt,
     this.updatedAt,
   });
@@ -57,6 +61,8 @@ class MediaLibraryDto {
       copiedFrom: json['copied_from'] == null
           ? null
           : (json['copied_from'] as num).toInt(),
+    limit: json['limit'] is num ? (json['limit'] as num).toInt() : null,
+    offset: json['offset'] is num ? (json['offset'] as num).toInt() : null,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'].toString())
           : null,

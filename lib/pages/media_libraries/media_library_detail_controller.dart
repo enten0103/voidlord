@@ -12,6 +12,11 @@ class MediaLibraryDetailController extends GetxController {
   final others = <MediaLibraryItemDto>[].obs; // 子库等
   int? libraryId;
   final library = Rxn<MediaLibraryDto>(); // 改为响应式，便于标题更新
+  // 分页状态
+  final limit = 20.obs;
+  final offset = 0.obs;
+  final loadingMore = false.obs;
+  final noMore = false.obs;
 
   Api get api => Get.find<Api>();
 
@@ -42,46 +47,79 @@ class MediaLibraryDetailController extends GetxController {
   }
 
   Future<void> load(int id) async {
+    // 初次加载或刷新重置分页
     loading.value = true;
     error.value = null;
     books.clear();
     others.clear();
+    offset.value = 0;
+    noMore.value = false;
     try {
-      final lib = await api.getLibrary(id);
+      final lib = await api.getLibrary(id, limit: limit.value, offset: 0);
       library.value = lib;
-      final items = lib.items;
-      final bookIds = items
-          .where((e) => e.book != null)
-          .map((e) => e.book!.id)
-          .toList();
-      // 并发获取图书详情 -> 构建临时列表后一次性赋值，减少多次通知
-      final fetched = await Future.wait(
-        bookIds.map((bid) async {
-          try {
-            return await api.getBook(bid);
-          } catch (_) {
-            return null; // 忽略失败的个别图书
-          }
-        }),
-      );
-      final built = <BookTileData>[];
-      for (final b in fetched.whereType<BookDto>()) {
-        final tagsMap = {for (final t in b.tags) t.key.toUpperCase(): t.value};
-        built.add(
-          BookTileData(
-            id: b.id,
-            cover: tagsMap['COVER'],
-            title: tagsMap['TITLE'] ?? '未命名',
-            author: tagsMap['AUTHOR'] ?? '-',
-          ),
-        );
-      }
-      books.assignAll(built);
-      others.assignAll(items.where((e) => e.childLibrary != null));
+      await _appendItems(lib.items);
+      _updateNoMore();
     } catch (e) {
       error.value = '加载失败';
     } finally {
       loading.value = false;
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (loadingMore.value || noMore.value || libraryId == null) return;
+    loadingMore.value = true;
+    try {
+      final nextOffset = books.length + others.length; // 仅书籍影响分页，此处简化
+      final lib = await api.getLibrary(
+        libraryId!,
+        limit: limit.value,
+        offset: nextOffset,
+      );
+      await _appendItems(lib.items);
+      offset.value = nextOffset;
+      _updateNoMore(total: lib.itemsCount);
+    } catch (_) {
+      // 忽略加载更多失败
+    } finally {
+      loadingMore.value = false;
+    }
+  }
+
+  Future<void> _appendItems(List<MediaLibraryItemDto> items) async {
+    final bookIds = items
+        .where((e) => e.book != null)
+        .map((e) => e.book!.id)
+        .toList();
+    final fetched = await Future.wait(
+      bookIds.map((bid) async {
+        try {
+          return await api.getBook(bid);
+        } catch (_) {
+          return null;
+        }
+      }),
+    );
+    final built = <BookTileData>[];
+    for (final b in fetched.whereType<BookDto>()) {
+      final tagsMap = {for (final t in b.tags) t.key.toUpperCase(): t.value};
+      built.add(
+        BookTileData(
+          id: b.id,
+          cover: tagsMap['COVER'],
+          title: tagsMap['TITLE'] ?? '未命名',
+          author: tagsMap['AUTHOR'] ?? '-',
+        ),
+      );
+    }
+    books.addAll(built);
+    others.addAll(items.where((e) => e.childLibrary != null));
+  }
+
+  void _updateNoMore({int? total}) {
+    final totalCount = total ?? library.value?.itemsCount ?? 0;
+    if (books.length >= totalCount) {
+      noMore.value = true;
     }
   }
 
@@ -90,37 +128,16 @@ class MediaLibraryDetailController extends GetxController {
     error.value = null;
     books.clear();
     others.clear();
+    offset.value = 0;
+    noMore.value = false;
     try {
-      final lib = await api.getVirtualMyUploadedLibrary();
-      library.value = lib;
-      final items = lib.items;
-      final bookIds = items
-          .where((e) => e.book != null)
-          .map((e) => e.book!.id)
-          .toList();
-      final fetched = await Future.wait(
-        bookIds.map((bid) async {
-          try {
-            return await api.getBook(bid);
-          } catch (_) {
-            return null;
-          }
-        }),
+      final lib = await api.getVirtualMyUploadedLibrary(
+        limit: limit.value,
+        offset: 0,
       );
-      final built = <BookTileData>[];
-      for (final b in fetched.whereType<BookDto>()) {
-        final tagsMap = {for (final t in b.tags) t.key.toUpperCase(): t.value};
-        built.add(
-          BookTileData(
-            id: b.id,
-            cover: tagsMap['COVER'],
-            title: tagsMap['TITLE'] ?? '未命名',
-            author: tagsMap['AUTHOR'] ?? '-',
-          ),
-        );
-      }
-      books.assignAll(built);
-      others.assignAll(items.where((e) => e.childLibrary != null));
+      library.value = lib;
+      await _appendItems(lib.items);
+      _updateNoMore(total: lib.itemsCount);
     } catch (e) {
       error.value = '加载虚拟库失败';
     } finally {

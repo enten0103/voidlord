@@ -52,6 +52,34 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
                   );
                 }, childCount: controller.books.length),
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Obx(() {
+                      if (controller.loadingMore.value) {
+                        return const SizedBox(
+                          height: 40,
+                          child: Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        );
+                      }
+                      if (controller.noMore.value) {
+                        return Text(
+                          '已加载全部 (${controller.books.length})',
+                          style: Theme.of(context).textTheme.labelSmall,
+                        );
+                      }
+                      return OutlinedButton.icon(
+                        onPressed: controller.loadMore,
+                        icon: const Icon(Icons.more_horiz),
+                        label: const Text('加载更多'),
+                      );
+                    }),
+                  ),
+                ),
+              ),
               if (controller.others.isNotEmpty) ...[
                 const SliverPadding(padding: EdgeInsets.only(top: 24)),
                 SliverToBoxAdapter(

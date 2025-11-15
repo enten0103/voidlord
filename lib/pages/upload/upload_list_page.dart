@@ -74,25 +74,63 @@ class UploadListPage extends GetView<UploadListController> {
                     ),
                   ],
                 )
-              : LayoutBuilder(
-                  builder: (context, constraints) {
-                    return GridView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
+              : CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    SliverPadding(
                       padding: const EdgeInsets.all(12),
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 180, // 宽屏时自动增加列数
-                            mainAxisSpacing: 12,
-                            crossAxisSpacing: 12,
-                            childAspectRatio: 0.56, // 稍增高度避免文本溢出
-                          ),
-                      itemCount: controller.books.length,
-                      itemBuilder: (context, index) {
-                        final b = controller.books[index];
-                        return _bookTile(context, b);
-                      },
-                    );
-                  },
+                      sliver: SliverGrid(
+                        gridDelegate:
+                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 180,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.56,
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final b = controller.books[index];
+                            return _bookTile(context, b);
+                          },
+                          childCount: controller.books.length,
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Center(
+                          child: Obx(() {
+                            if (controller.loadingMore.value) {
+                              return const SizedBox(
+                                height: 40,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            }
+                            if (controller.noMore.value) {
+                              return Text(
+                                '已加载全部 (${controller.books.length})',
+                                style:
+                                    Theme.of(context).textTheme.labelSmall,
+                              );
+                            }
+                            return OutlinedButton.icon(
+                              onPressed: controller.loadMore,
+                              icon: const Icon(Icons.more_horiz),
+                              label: const Text('加载更多'),
+                            );
+                          }),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
         );
       }),

@@ -15,18 +15,21 @@ extension MediaLibraryApi on Api {
         .toList();
   }
 
-  Future<MediaLibraryDto> getLibrary(int id) async {
-    final resp = await client.get('/media-libraries/$id');
+  Future<MediaLibraryDto> getLibrary(int id, {int? limit, int? offset}) async {
+    final qs = _buildPageQS(limit, offset);
+    final resp = await client.get('/media-libraries/$id$qs');
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<MediaLibraryDto> getReadingRecordLibrary() async {
-    final resp = await client.get('/media-libraries/reading-record');
+  Future<MediaLibraryDto> getReadingRecordLibrary({int? limit, int? offset}) async {
+    final qs = _buildPageQS(limit, offset);
+    final resp = await client.get('/media-libraries/reading-record$qs');
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<MediaLibraryDto> getVirtualMyUploadedLibrary() async {
-    final resp = await client.get('/media-libraries/virtual/my-uploaded');
+  Future<MediaLibraryDto> getVirtualMyUploadedLibrary({int? limit, int? offset}) async {
+    final qs = _buildPageQS(limit, offset);
+    final resp = await client.get('/media-libraries/virtual/my-uploaded$qs');
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
@@ -69,5 +72,13 @@ extension MediaLibraryApi on Api {
 
   Future<void> deleteLibrary(int id) async {
     await client.delete('/media-libraries/$id');
+  }
+
+  String _buildPageQS(int? limit, int? offset) {
+    if (limit == null && offset == null) return '';
+    final params = <String, String>{};
+    if (limit != null) params['limit'] = '$limit';
+    if (offset != null) params['offset'] = '$offset';
+    return '?'+params.entries.map((e)=>'${e.key}=${e.value}').join('&');
   }
 }

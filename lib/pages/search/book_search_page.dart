@@ -11,57 +11,27 @@ class BookSearchPage extends GetView<BookSearchController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return Scaffold(
-        body: LayoutBuilder(
-          builder: (ctx, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _simpleSearchBar(context),
-                if (controller.advancedMode.value) ...[
-                  const SizedBox(height: 24),
-                  _advancedPanelReactive(context),
-                ],
-                const SizedBox(height: 20),
-                _resultsGrid(context, constraints.maxWidth),
-                const SizedBox(height: 12),
-                if (controller.hasMore.value)
-                  Center(
-                    child: FilledButton(
-                      onPressed: controller.loading.value
-                          ? null
-                          : () => controller.loadMore(),
-                      child: const Text('加载更多'),
-                    ),
-                  ),
-                if (!controller.loading.value &&
-                    controller.results.isNotEmpty &&
-                    !controller.hasMore.value &&
-                    controller.total.value != null)
-                  Center(
-                    child: Text(
-                      '已全部加载 (${controller.results.length}/${controller.total.value})',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                if (controller.error.value != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12.0),
-                    child: Text(
-                      controller.error.value!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (ctx, constraints) => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _simpleSearchBar(context),
+              Obx(() => controller.advancedMode.value
+                  ? const SizedBox(height: 24)
+                  : const SizedBox()),
+              Obx(() => controller.advancedMode.value
+                  ? _advancedPanelReactive(context)
+                  : const SizedBox()),
+              const SizedBox(height: 20),
+              _resultsSectionReactive(context, constraints.maxWidth),
+            ],
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 
   /// 高级面板：采用细粒度 Obx，避免整块重建导致输入抖动
@@ -299,6 +269,47 @@ class BookSearchPage extends GetView<BookSearchController> {
         return BookTile(title: title, author: author, cover: cover);
       },
     );
+  }
+
+  /// 结果展示 + 分页/错误 提供局部响应式
+  Widget _resultsSectionReactive(BuildContext context, double maxWidth) {
+    return Obx(() {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _resultsGrid(context, maxWidth),
+          const SizedBox(height: 12),
+          if (controller.hasMore.value)
+            Center(
+              child: FilledButton(
+                onPressed:
+                    controller.loading.value ? null : () => controller.loadMore(),
+                child: const Text('加载更多'),
+              ),
+            ),
+          if (!controller.loading.value &&
+              controller.results.isNotEmpty &&
+              !controller.hasMore.value &&
+              controller.total.value != null)
+            Center(
+              child: Text(
+                '已全部加载 (${controller.results.length}/${controller.total.value})',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          if (controller.error.value != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: Text(
+                controller.error.value!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
+        ],
+      );
+    });
   }
 
   int _computeColumns(double maxWidth) {

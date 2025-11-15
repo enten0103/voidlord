@@ -541,20 +541,31 @@ class _BannerCardState extends State<_BannerCard>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: _close,
-                        onTapDown: (_) => setState(() => _closeScale = 0.86),
-                        onTapUp: (_) => setState(() => _closeScale = 1.0),
-                        onTapCancel: () => setState(() => _closeScale = 1.0),
-                        child: AnimatedScale(
-                          scale: _closeScale,
-                          duration: const Duration(milliseconds: 100),
-                          curve: Curves.easeOut,
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: fg.withAlpha(204),
+                      // 关闭按钮：增加 InkWell 涟漪与按压缩放反馈
+                      Material(
+                        color: Colors.transparent,
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          splashColor: fg.withOpacity(0.18),
+                          highlightColor: fg.withOpacity(0.08),
+                          onTap: _close,
+                          onTapDown: (_) => setState(() => _closeScale = 0.86),
+                          onTapCancel: () => setState(() => _closeScale = 1.0),
+                          onTapUp: (_) => setState(() => _closeScale = 1.0),
+                          child: AnimatedScale(
+                            scale: _closeScale,
+                            duration: const Duration(milliseconds: 110),
+                            curve: Curves.easeOut,
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 18,
+                                color: fg.withAlpha(204),
+                                semanticLabel: '关闭提示',
+                              ),
+                            ),
                           ),
                         ),
                       ),

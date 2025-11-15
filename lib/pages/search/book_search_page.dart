@@ -358,7 +358,9 @@ class BookSearchPage extends GetView<BookSearchController> {
                 ),
                 decoration: BoxDecoration(
                   color: c.active
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.10)
+                      ? Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.10)
                       : Colors.transparent,
                   border: Border(
                     bottom: BorderSide(

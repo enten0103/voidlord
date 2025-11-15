@@ -196,7 +196,7 @@ class BookSearchPage extends GetView<BookSearchController> {
           onChanged: (v) => controller.simpleQuery.value = v,
         ),
         const SizedBox(height: 6),
-        _suggestions(context),
+  _suggestionsReactive(context),
         if (controller.loading.value)
           const Padding(
             padding: EdgeInsets.only(top: 8.0),
@@ -308,83 +308,89 @@ class BookSearchPage extends GetView<BookSearchController> {
     return 5;
   }
 
-  /// 根据输入展示三个候选：标题/作者/分类
-  Widget _suggestions(BuildContext context) {
-    final q = controller.simpleQuery.value.trim();
-    if (q.isEmpty) return const SizedBox();
-    final active = controller.selectedSimpleKey.value;
-    final List<_Candidate> list = [
-      _Candidate(
-        label: '标题',
-        key: 'TITLE',
-        display: '标题：$q',
-        active: active == 'TITLE',
-      ),
-      _Candidate(
-        label: '作者',
-        key: 'AUTHOR',
-        display: '作者：$q',
-        active: active == 'AUTHOR',
-      ),
-      _Candidate(
-        label: '分类',
-        key: 'CLASS',
-        display: '分类：$q',
-        active: active == 'CLASS',
-      ),
-    ];
-    return Column(
-      children: [
-        for (final c in list)
-          InkWell(
-            onTap: controller.loading.value
-                ? null
-                : () async {
-                    controller.selectedSimpleKey.value = c.key;
-                    await controller.searchMatchKey(c.key, reset: true);
-                    if (controller.results.isEmpty &&
-                        controller.error.value == null) {
-                      SideBanner.info('未找到匹配结果');
-                    }
-                  },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              decoration: BoxDecoration(
-                color: c.active
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.10)
-                    : Colors.transparent,
-                border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).dividerColor,
-                    width: 0.7,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    c.active ? Icons.check_circle : Icons.circle_outlined,
-                    size: 18,
-                    color: c.active
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).iconTheme.color,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      c.display,
-                      style: c.active
-                          ? const TextStyle(fontWeight: FontWeight.w600)
-                          : null,
+  /// 候选列表使用独立 Obx 确保即时刷新
+  Widget _suggestionsReactive(BuildContext context) {
+    return Obx(() {
+      final q = controller.simpleQuery.value.trim();
+      if (q.isEmpty) return const SizedBox();
+      final active = controller.selectedSimpleKey.value;
+      final List<_Candidate> list = [
+        _Candidate(
+          label: '标题',
+          key: 'TITLE',
+          display: '标题：$q',
+          active: active == 'TITLE',
+        ),
+        _Candidate(
+          label: '作者',
+          key: 'AUTHOR',
+          display: '作者：$q',
+          active: active == 'AUTHOR',
+        ),
+        _Candidate(
+          label: '分类',
+          key: 'CLASS',
+          display: '分类：$q',
+          active: active == 'CLASS',
+        ),
+      ];
+      return Column(
+        children: [
+          for (final c in list)
+            InkWell(
+              onTap: controller.loading.value
+                  ? null
+                  : () async {
+                      controller.selectedSimpleKey.value = c.key;
+                      await controller.searchMatchKey(c.key, reset: true);
+                      if (controller.results.isEmpty &&
+                          controller.error.value == null) {
+                        SideBanner.info('未找到匹配结果');
+                      }
+                    },
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: c.active
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.10)
+                      : Colors.transparent,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                      width: 0.7,
                     ),
                   ),
-                ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      c.active ? Icons.check_circle : Icons.circle_outlined,
+                      size: 18,
+                      color: c.active
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).iconTheme.color,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        c.display,
+                        style: c.active
+                            ? const TextStyle(fontWeight: FontWeight.w600)
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 

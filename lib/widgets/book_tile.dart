@@ -30,33 +30,46 @@ class BookTile extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         splashFactory: InkRipple.splashFactory,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(radius - 2),
-                child: _buildCover(),
+        child: Padding(
+          padding: EdgeInsetsDirectional.only(
+            start: 8,
+            end: 8,
+            top: 8,
+            bottom: 8,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(radius - 2),
+                  child: _buildCover(),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title.isEmpty ? '未命名' : title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            Text(
-              author.isEmpty ? '-' : author,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: Colors.black54),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                title.isEmpty ? '未命名' : title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              Text(
+                author.isEmpty ? '-' : author,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelSmall
+                    ?.copyWith(color: Colors.black54),
+              ),
+            ],
+          ),
         ),
       ),
     );

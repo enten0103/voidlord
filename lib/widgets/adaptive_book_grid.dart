@@ -55,10 +55,12 @@ class AdaptiveBookGrid extends StatelessWidget {
               if (k == 'AUTHOR') author = t.value;
               if (k == 'COVER') cover = t.value;
             }
-            return GestureDetector(
+            return BookTile(
+              title: title,
+              author: author,
+              cover: cover,
               onTap: onTap == null ? null : () => onTap!(b),
               onLongPress: onLongPress == null ? null : () => onLongPress!(b),
-              child: BookTile(title: title, author: author, cover: cover),
             );
           },
         );
@@ -105,26 +107,25 @@ class AdaptiveBookSliverGrid extends StatelessWidget {
               mainAxisSpacing: 12,
               childAspectRatio: childAspectRatio,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final b = books[index];
-                String title = '';
-                String author = '';
-                String? cover;
-                for (final t in b.tags) {
-                  final k = t.key.toUpperCase();
-                  if (k == 'TITLE') title = t.value;
-                  if (k == 'AUTHOR') author = t.value;
-                  if (k == 'COVER') cover = t.value;
-                }
-                return GestureDetector(
-                  onTap: onTap == null ? null : () => onTap!(b),
-                  onLongPress: onLongPress == null ? null : () => onLongPress!(b),
-                  child: BookTile(title: title, author: author, cover: cover),
-                );
-              },
-              childCount: books.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final b = books[index];
+              String title = '';
+              String author = '';
+              String? cover;
+              for (final t in b.tags) {
+                final k = t.key.toUpperCase();
+                if (k == 'TITLE') title = t.value;
+                if (k == 'AUTHOR') author = t.value;
+                if (k == 'COVER') cover = t.value;
+              }
+              return BookTile(
+                title: title,
+                author: author,
+                cover: cover,
+                onTap: onTap == null ? null : () => onTap!(b),
+                onLongPress: onLongPress == null ? null : () => onLongPress!(b),
+              );
+            }, childCount: books.length),
           ),
         );
       },

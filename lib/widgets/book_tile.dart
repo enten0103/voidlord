@@ -6,6 +6,8 @@ class BookTile extends StatelessWidget {
   final String author;
   final String? cover; // URL 或对象 key
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final double radius;
 
   const BookTile({
     super.key,
@@ -13,39 +15,49 @@ class BookTile extends StatelessWidget {
     required this.author,
     this.cover,
     this.onTap,
+    this.onLongPress,
+    this.radius = 8,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: _buildCover(),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(radius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(radius),
+        onTap: onTap,
+        onLongPress: onLongPress,
+        splashFactory: InkRipple.splashFactory,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(radius - 2),
+                child: _buildCover(),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title.isEmpty ? '未命名' : title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          Text(
-            author.isEmpty ? '-' : author,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.labelSmall?.copyWith(color: Colors.black54),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              title.isEmpty ? '未命名' : title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              author.isEmpty ? '-' : author,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: Colors.black54),
+            ),
+          ],
+        ),
       ),
     );
   }

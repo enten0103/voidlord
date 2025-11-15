@@ -9,39 +9,60 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.loading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      return RefreshIndicator(
-        onRefresh: () => controller.service.loadAll(),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _sectionTitle(context, '媒体库'),
-            const SizedBox(height: 8),
-            _fixedLibraryCard(context, controller.readingRecord.value, '阅读记录库'),
-            const SizedBox(height: 24),
-            _sectionTitle(context, '收藏书单'),
-            const SizedBox(height: 8),
-            if (controller.myLibraries.isEmpty)
-              Text('暂无书单', style: Theme.of(context).textTheme.bodySmall)
-            else
-              ...controller.myLibraries.map(
-                (lib) => _libraryCard(context, lib),
-              ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: controller.creating.value
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('媒体库'),
+        actions: [
+          // 刷新按钮
+          Obx(
+            () => IconButton(
+              tooltip: controller.loading.value ? '刷新中...' : '刷新',
+              icon: const Icon(Icons.refresh),
+              onPressed: controller.loading.value
                   ? null
-                  : () => _showCreateDialog(context),
-              icon: const Icon(Icons.add_box),
-              label: Text(controller.creating.value ? '创建中...' : '新建书单'),
+                  : () => controller.service.loadAll(),
             ),
-          ],
-        ),
-      );
-    });
+          ),
+        ],
+      ),
+      body: Obx(() {
+        if (controller.loading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return RefreshIndicator(
+          onRefresh: () => controller.service.loadAll(),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _sectionTitle(context, '媒体库'),
+              const SizedBox(height: 8),
+              _fixedLibraryCard(
+                context,
+                controller.readingRecord.value,
+                '阅读记录库',
+              ),
+              const SizedBox(height: 24),
+              _sectionTitle(context, '收藏书单'),
+              const SizedBox(height: 8),
+              if (controller.myLibraries.isEmpty)
+                Text('暂无书单', style: Theme.of(context).textTheme.bodySmall)
+              else
+                ...controller.myLibraries.map(
+                  (lib) => _libraryCard(context, lib),
+                ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: controller.creating.value
+                    ? null
+                    : () => _showCreateDialog(context),
+                icon: const Icon(Icons.add_box),
+                label: Text(controller.creating.value ? '创建中...' : '新建书单'),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
   }
 
   Widget _sectionTitle(BuildContext context, String title) =>

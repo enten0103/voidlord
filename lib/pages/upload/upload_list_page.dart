@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import '../../routes/app_routes.dart';
 import '../../models/book_models.dart';
 import 'upload_list_controller.dart';
+import '../../apis/client.dart';
+import '../../apis/books_api.dart';
+import '../../widgets/side_baner.dart';
 
 class UploadListPage extends GetView<UploadListController> {
   const UploadListPage({super.key});
@@ -103,7 +106,69 @@ class UploadListPage extends GetView<UploadListController> {
     final author = tagsMap['AUTHOR'] ?? '-';
 
     return InkWell(
-      onTap: () => Get.toNamed(Routes.uploadEdit, arguments: b.id),
+      onTap: () => Get.toNamed(Routes.bookDetail, arguments: b.id),
+      onLongPress: () async {
+        final action = await showModalBottomSheet<String>(
+          context: context,
+          builder: (ctx) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: const Text('编辑'),
+                  onTap: () => Navigator.pop(ctx, 'edit'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: const Text('删除'),
+                  onTap: () => Navigator.pop(ctx, 'delete'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.close),
+                  title: const Text('取消'),
+                  onTap: () => Navigator.pop(ctx, 'cancel'),
+                ),
+              ],
+            ),
+          ),
+        );
+        if (!context.mounted) return;
+        if (action == 'edit') {
+          Get.toNamed(Routes.uploadEdit, arguments: b.id);
+        } else if (action == 'delete') {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (dctx) => AlertDialog(
+              title: const Text('确认删除'),
+              content: Text('删除图书 #${b.id}?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dctx, false),
+                  child: const Text('取消'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(dctx, true),
+                  child: const Text('删除'),
+                ),
+              ],
+            ),
+          );
+          if (confirm == true) {
+            try {
+              final api = Get.find<Api>();
+              final ok = await api.deleteBook(b.id);
+              if (ok) {
+                controller.books.removeWhere((e) => e.id == b.id);
+                SideBanner.info('已删除 #${b.id}');
+              } else {
+                SideBanner.danger('删除失败');
+              }
+            } catch (e) {
+              SideBanner.danger('删除异常');
+            }
+          }
+        }
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

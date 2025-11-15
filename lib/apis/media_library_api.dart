@@ -30,9 +30,17 @@ extension MediaLibraryApi on Api {
     return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
   }
 
-  Future<MediaLibraryDto> addBook(int libraryId, int bookId) async {
+  /// 添加书籍到媒体库：返回的是新增的条目（后端未返回整个库），需要调用者自行刷新库
+  Future<MediaLibraryItemDto> addBook(int libraryId, int bookId) async {
     final resp = await client.post('/media-libraries/$libraryId/books/$bookId');
-    return MediaLibraryDto.fromJson(resp.data as Map<String, dynamic>);
+    final raw = resp.data as Map<String, dynamic>;
+    return MediaLibraryItemDto(
+      id: (raw['id'] as num).toInt(),
+      book: raw['bookId'] == null
+          ? null
+          : SimpleBookRef(id: (raw['bookId'] as num).toInt()),
+      childLibrary: null,
+    );
   }
 
   Future<MediaLibraryDto> addChildLibrary(int libraryId, int childId) async {

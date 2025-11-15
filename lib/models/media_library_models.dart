@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class MediaLibraryDto {
   final int id;
   final String name;
@@ -32,42 +30,40 @@ class MediaLibraryDto {
   });
 
   factory MediaLibraryDto.fromJson(Map<String, dynamic> json) {
-    try {
-      // 安全解析 items_count：后端可能未返回该字段（null），旧实现会对 null 进行 num 强转
-      final dynamic itemsCountRaw = json['items_count'];
-      final int safeItemsCount = itemsCountRaw is num ? itemsCountRaw.toInt() : 0;
+    final dynamic itemsCountRaw = json['items_count'];
+    final int safeItemsCount = itemsCountRaw is num ? itemsCountRaw.toInt() : 0;
 
-      return MediaLibraryDto(
-        id: (json['id'] as num).toInt(),
-        name: json['name'] as String,
-        description: json['description'] as String?,
-        isPublic: json['is_public'] == true,
-        isSystem: json['is_system'] == true,
-        isVirtual: json['is_virtual'] == true,
-        ownerId: json['owner_id'] == null ? null : (json['owner_id'] as num).toInt(),
-        itemsCount: safeItemsCount,
-        items: (json['items'] as List? ?? [])
-            .whereType<Map>()
-            .map((e) => MediaLibraryItemDto.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-        tags: (json['tags'] as List? ?? [])
-            .whereType<Map>()
-            .map((e) => LibraryTagDto.fromJson(Map<String, dynamic>.from(e)))
-            .toList(),
-        copiedFrom: json['copied_from'] == null ? null : (json['copied_from'] as num).toInt(),
-        createdAt: json['created_at'] != null
-            ? DateTime.tryParse(json['created_at'].toString())
-            : null,
-        updatedAt: json['updated_at'] != null
-            ? DateTime.tryParse(json['updated_at'].toString())
-            : null,
-      );
-    } catch (e, st) {
-      debugPrint('MediaLibraryDto.fromJson error: $e');
-      debugPrint('Stack: $st');
-      debugPrint('Source JSON: $json');
-      rethrow; // 继续抛出以便上层逻辑感知，但日志已记录
-    }
+    return MediaLibraryDto(
+      id: (json['id'] as num).toInt(),
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      isPublic: json['is_public'] == true,
+      isSystem: json['is_system'] == true,
+      isVirtual: json['is_virtual'] == true,
+      ownerId: json['owner_id'] == null
+          ? null
+          : (json['owner_id'] as num).toInt(),
+      itemsCount: safeItemsCount,
+      items: (json['items'] as List? ?? [])
+          .whereType<Map>()
+          .map(
+            (e) => MediaLibraryItemDto.fromJson(Map<String, dynamic>.from(e)),
+          )
+          .toList(),
+      tags: (json['tags'] as List? ?? [])
+          .whereType<Map>()
+          .map((e) => LibraryTagDto.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      copiedFrom: json['copied_from'] == null
+          ? null
+          : (json['copied_from'] as num).toInt(),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
+    );
   }
 }
 

@@ -29,7 +29,8 @@ class PermissionService extends GetxService {
         (levels[bookUpdate] ?? 0) >= 1 &&
         (levels[bookDelete] ?? 0) >= 1;
     canManagePermissions.value = levels.values.any((l) => l >= 3);
-    canManageRecommendations.value = (levels['RECOMMENDATION_MANAGE'] ?? 0) >= 1;
+    canManageRecommendations.value =
+        (levels['RECOMMENDATION_MANAGE'] ?? 0) >= 1;
   }
 
   Future<void> load() async {

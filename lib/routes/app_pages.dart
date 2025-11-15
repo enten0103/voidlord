@@ -12,6 +12,8 @@ import '../services/auth_service.dart';
 import '../pages/media_libraries/media_library_detail_page.dart';
 import '../pages/upload/upload_page.dart';
 import '../pages/upload/upload_list_page.dart';
+import '../pages/book/book_detail_page.dart';
+import '../bindings/book_detail_binding.dart';
 import '../bindings/media_library_detail_binding.dart';
 import '../bindings/upload_binding.dart';
 import 'app_routes.dart';
@@ -68,6 +70,12 @@ class AppPages {
       page: () => const UploadPage(),
       middlewares: [AuthMiddleware()],
       binding: UploadBinding(),
+    ),
+    GetPage(
+      name: Routes.bookDetail,
+      page: () => const BookDetailPage(),
+      middlewares: [AuthMiddleware()],
+      binding: BookDetailBinding(),
     ),
   ];
 

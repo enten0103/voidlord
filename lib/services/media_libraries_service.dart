@@ -70,4 +70,22 @@ class MediaLibrariesService extends GetxService {
       SideBanner.danger('更新失败');
     }
   }
+
+  Future<void> addBookToLibrary(int libraryId, int bookId) async {
+    try {
+      await api.addBook(libraryId, bookId); // 返回条目，忽略内容
+      // 二次拉取最新库数据
+      final refreshed = await api.getLibrary(libraryId);
+      final idx = myLibraries.indexWhere((e) => e.id == libraryId);
+      if (idx >= 0) {
+        myLibraries[idx] = refreshed;
+      } else {
+        // 若之前列表没有（例如首次收藏后创建的系统库），追加
+        myLibraries.add(refreshed);
+      }
+      SideBanner.info('已收藏到媒体库');
+    } catch (e) {
+      SideBanner.danger('收藏失败');
+    }
+  }
 }

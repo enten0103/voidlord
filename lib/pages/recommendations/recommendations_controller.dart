@@ -1,20 +1,20 @@
 import 'package:get/get.dart';
 import '../../apis/client.dart';
+import '../../apis/recommendations_api.dart';
 import '../../services/media_libraries_service.dart';
+import '../../models/recommendations_models.dart';
+import '../../widgets/side_baner.dart';
 
-/// 推荐槽位：每个槽位指向一个媒体库（书单）
-class RecommendationSlot {
-  final int id; // 槽位ID
-  int? libraryId; // 指向的媒体库ID
-  String? libraryName; // 便于展示
-  RecommendationSlot({required this.id, this.libraryId, this.libraryName});
-}
-
+/// 推荐分区管理控制器：支持加载、创建、更新、启用/停用、重排与删除
 class RecommendationsController extends GetxController {
-  final loading = false.obs;
-  final saving = false.obs;
+  final loading = false.obs; // 列表加载中
+  final saving = false.obs; // 后端写操作中
+  final creating = false.obs; // 创建中
   final error = RxnString();
-  final slots = <RecommendationSlot>[].obs;
+
+  final sections = <RecommendationSectionDto>[].obs; // 原始全量数据（依据 showAll 过滤）
+  final showAll = false.obs; // 是否显示 inactive
+  final orderDirty = false.obs; // 是否存在未提交的排序更改
 
   Api get api => Get.find<Api>();
   MediaLibrariesService get libs => Get.find<MediaLibrariesService>();
@@ -29,40 +29,195 @@ class RecommendationsController extends GetxController {
     loading.value = true;
     error.value = null;
     try {
-      // TODO: 调用后端推荐槽位列表接口。占位模拟 5 个槽位，其中部分为空。
-      await Future.delayed(const Duration(milliseconds: 200));
-      slots.assignAll([
-        RecommendationSlot(id: 1, libraryId: libs.readingRecord.value?.id, libraryName: libs.readingRecord.value?.name),
-        RecommendationSlot(id: 2, libraryId: libs.myLibraries.isNotEmpty ? libs.myLibraries[0].id : null, libraryName: libs.myLibraries.isNotEmpty ? libs.myLibraries[0].name : null),
-        RecommendationSlot(id: 3),
-        RecommendationSlot(id: 4),
-        RecommendationSlot(id: 5),
-      ]);
+      final list = await api.listSections(all: showAll.value);
+      final nameMap = {
+        if (libs.readingRecord.value != null)
+          libs.readingRecord.value!.id: libs.readingRecord.value!.name,
+        for (final m in libs.myLibraries) m.id: m.name,
+      };
+      sections.assignAll(
+        list.map(
+          (s) => RecommendationSectionDto(
+            id: s.id,
+            key: s.key,
+            title: s.title,
+            description: s.description,
+            active: s.active,
+            sortOrder: s.sortOrder,
+            mediaLibraryId: s.mediaLibraryId,
+            mediaLibraryName: nameMap[s.mediaLibraryId] ?? s.mediaLibraryName,
+          ),
+        ),
+      );
+      sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      orderDirty.value = false;
     } catch (e) {
-      error.value = '加载推荐槽位失败';
+      error.value = '加载推荐分区失败';
     } finally {
       loading.value = false;
     }
   }
 
-  Future<void> updateSlotLibrary(int slotId, int? newLibraryId) async {
+  List<RecommendationSectionDto> get visibleSections =>
+      sections.where((s) => showAll.value || s.active).toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+  Future<void> toggleShowAll(bool v) async {
+    showAll.value = v;
+    await load();
+  }
+
+  Future<void> changeLibrary(int sectionId, int newLibraryId) async {
     saving.value = true;
     try {
-      // TODO: 调用后端更新接口: api.updateRecommendation(slotId, newLibraryId)
-      await Future.delayed(const Duration(milliseconds: 150));
-      final lib = libs.myLibraries.firstWhereOrNull((e) => e.id == newLibraryId);
-      final idx = slots.indexWhere((s) => s.id == slotId);
-      if (idx >= 0) {
-        slots[idx] = RecommendationSlot(
-          id: slotId,
-          libraryId: newLibraryId,
-            libraryName: lib?.name,
-        );
-      }
+      final updated = await api.updateSection(
+        sectionId,
+        UpdateSectionRequest(mediaLibraryId: newLibraryId),
+      );
+      _applyUpdated(updated);
+      SideBanner.info('已切换库');
     } catch (e) {
-      error.value = '更新槽位失败';
+      SideBanner.danger('切换库失败');
     } finally {
       saving.value = false;
+    }
+  }
+
+  Future<void> toggleActive(int sectionId, bool active) async {
+    saving.value = true;
+    try {
+      final updated = await api.updateSection(
+        sectionId,
+        UpdateSectionRequest(active: active),
+      );
+      _applyUpdated(updated);
+    } catch (e) {
+      SideBanner.danger('更新启用状态失败');
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  Future<void> updateTitleDesc(
+    int sectionId,
+    String title,
+    String? desc,
+  ) async {
+    saving.value = true;
+    try {
+      final updated = await api.updateSection(
+        sectionId,
+        UpdateSectionRequest(title: title, description: desc),
+      );
+      _applyUpdated(updated);
+      SideBanner.info('已更新');
+    } catch (e) {
+      SideBanner.danger('更新失败');
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  Future<void> createSection(
+    String key,
+    String title,
+    int mediaLibraryId, {
+    String? description,
+    bool active = true,
+  }) async {
+    creating.value = true;
+    try {
+      final created = await api.createSection(
+        CreateSectionRequest(
+          key: key,
+          title: title,
+          mediaLibraryId: mediaLibraryId,
+          description: description,
+          active: active,
+        ),
+      );
+      sections.add(created);
+      sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      SideBanner.info('创建成功');
+    } catch (e) {
+      SideBanner.danger('创建失败');
+    } finally {
+      creating.value = false;
+    }
+  }
+
+  Future<void> deleteSection(int sectionId) async {
+    saving.value = true;
+    try {
+      await api.deleteSection(sectionId);
+      sections.removeWhere((s) => s.id == sectionId);
+      SideBanner.info('已删除');
+    } catch (e) {
+      SideBanner.danger('删除失败');
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  void localReorder(int oldIndex, int newIndex) {
+    final list = visibleSections; // 已过滤且排序
+    if (newIndex > oldIndex) newIndex -= 1;
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    for (int i = 0; i < list.length; i++) {
+      final s = list[i];
+      final idx = sections.indexWhere((e) => e.id == s.id);
+      if (idx >= 0) {
+        sections[idx] = RecommendationSectionDto(
+          id: s.id,
+          key: s.key,
+          title: s.title,
+          description: s.description,
+          active: s.active,
+          sortOrder: i,
+          mediaLibraryId: s.mediaLibraryId,
+          mediaLibraryName: s.mediaLibraryName,
+        );
+      }
+    }
+    orderDirty.value = true;
+  }
+
+  Future<void> persistReorder() async {
+    if (!orderDirty.value) return;
+    saving.value = true;
+    try {
+      final orderedIds =
+          (sections.where((s) => showAll.value || s.active).toList()
+                ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
+              .map((e) => e.id)
+              .toList();
+      final refreshed = await api.reorderSections(orderedIds);
+      sections.assignAll(refreshed);
+      sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      orderDirty.value = false;
+      SideBanner.info('重排已保存');
+    } catch (e) {
+      SideBanner.danger('保存重排失败');
+    } finally {
+      saving.value = false;
+    }
+  }
+
+  void _applyUpdated(RecommendationSectionDto updated) {
+    final idx = sections.indexWhere((s) => s.id == updated.id);
+    if (idx >= 0) {
+      sections[idx] = RecommendationSectionDto(
+        id: updated.id,
+        key: updated.key,
+        title: updated.title,
+        description: updated.description,
+        active: updated.active,
+        sortOrder: updated.sortOrder,
+        mediaLibraryId: updated.mediaLibraryId,
+        mediaLibraryName: updated.mediaLibraryName,
+      );
+      sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     }
   }
 }

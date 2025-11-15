@@ -20,8 +20,8 @@ class RootPage extends GetView<RootController> {
     return Obx(() {
       final i = controller.index.value;
       final hasUpload = perm.hasBookUploadAccess.value;
-  final hasPermMgmt = perm.canManagePermissions.value;
-  final hasRecommend = perm.canManageRecommendations.value;
+      final hasPermMgmt = perm.canManagePermissions.value;
+      final hasRecommend = perm.canManageRecommendations.value;
       final titles = [
         '广场',
         '搜索',

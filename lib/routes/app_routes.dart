@@ -6,4 +6,5 @@ class Routes {
   static const String settings = '/settings';
   static const String uploadList = '/upload';
   static const String uploadEdit = '/upload/edit'; // 可拼接 /:id
+  static const String bookDetail = '/book'; // 需传递参数 id
 }

@@ -42,15 +42,6 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
-                Obx(
-                  () => Switch(
-                    value: controller.showAll.value,
-                    onChanged: (v) => controller.toggleShowAll(v),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Text('全部'),
-                const SizedBox(width: 12),
                 FilledButton.icon(
                   onPressed: controller.creating.value
                       ? null
@@ -125,9 +116,9 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                                         titleCtrl.text.trim(),
                                         libId!,
                                         description:
-                                            descCtrl.text.trim().isEmpty
-                                            ? null
-                                            : descCtrl.text.trim(),
+                                            descCtrl.text.trim().isNotEmpty
+                                                ? descCtrl.text.trim()
+                                                : null,
                                       );
                                       if (ctx.mounted) {
                                         Navigator.pop(ctx);

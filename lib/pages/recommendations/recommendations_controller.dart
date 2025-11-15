@@ -12,8 +12,8 @@ class RecommendationsController extends GetxController {
   final creating = false.obs; // 创建中
   final error = RxnString();
 
-  final sections = <RecommendationSectionDto>[].obs; // 原始全量数据（依据 showAll 过滤）
-  final showAll = false.obs; // 是否显示 inactive
+  // 全量分区（始终加载全部，删除 showAll 状态逻辑）
+  final sections = <RecommendationSectionDto>[].obs;
   final orderDirty = false.obs; // 是否存在未提交的排序更改
 
   Api get api => Get.find<Api>();
@@ -29,7 +29,8 @@ class RecommendationsController extends GetxController {
     loading.value = true;
     error.value = null;
     try {
-      final list = await api.listSections(all: showAll.value);
+      // 始终请求全部分区（包括 inactive）
+      final list = await api.listSections(all: true);
       final nameMap = {
         if (libs.readingRecord.value != null)
           libs.readingRecord.value!.id: libs.readingRecord.value!.name,
@@ -58,14 +59,9 @@ class RecommendationsController extends GetxController {
     }
   }
 
+  // 页面直接使用全部分区（已包含 active / inactive）
   List<RecommendationSectionDto> get visibleSections =>
-      sections.where((s) => showAll.value || s.active).toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-
-  Future<void> toggleShowAll(bool v) async {
-    showAll.value = v;
-    await load();
-  }
+      (sections.toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)));
 
   Future<void> changeLibrary(int sectionId, int newLibraryId) async {
     saving.value = true;
@@ -187,11 +183,11 @@ class RecommendationsController extends GetxController {
     if (!orderDirty.value) return;
     saving.value = true;
     try {
-      final orderedIds =
-          (sections.where((s) => showAll.value || s.active).toList()
-                ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
-              .map((e) => e.id)
-              .toList();
+  // 重排时提交全部分区的当前顺序
+  final orderedIds = (sections.toList()
+    ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder)))
+      .map((e) => e.id)
+      .toList();
       final refreshed = await api.reorderSections(orderedIds);
       sections.assignAll(refreshed);
       sections.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));

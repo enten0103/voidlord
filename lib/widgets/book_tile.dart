@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../services/image_cache_settings_service.dart';
 
 /// 通用书籍展示组件：封面 + 标题 + 作者。
 class BookTile extends StatelessWidget {
@@ -43,9 +45,13 @@ class BookTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius - 2),
-                  child: _buildCover(),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(radius - 2),
+                      child: _buildCover(constraints.maxWidth),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 4),
@@ -72,7 +78,7 @@ class BookTile extends StatelessWidget {
     );
   }
 
-  Widget _buildCover() {
+  Widget _buildCover(double logicalWidth) {
     if (cover == null || cover!.trim().isEmpty) {
       return Container(
         color: Colors.grey.shade300,
@@ -84,10 +90,29 @@ class BookTile extends StatelessWidget {
     final value = cover!;
     final isUrl = value.startsWith('http://') || value.startsWith('https://');
     final src = isUrl ? value : 'http://localhost:9000/voidlord/$value';
-    return CachedNetworkImage(
-      imageUrl: src,
-      fit: BoxFit.cover,
-      errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
-    );
+    final svc = Get.isRegistered<ImageCacheSettingsService>()
+        ? Get.find<ImageCacheSettingsService>()
+        : null;
+    if (svc == null) {
+      return CachedNetworkImage(
+        imageUrl: src,
+        fit: BoxFit.cover,
+        errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
+      );
+    }
+    return Obx(() {
+      final percent = svc.qualityPercent.value;
+      final dpr = MediaQuery.of(Get.context!).devicePixelRatio;
+      // 以百分比线性缩放目标像素宽度，最低 80，最高 2000
+      final targetWidth = (logicalWidth * dpr * percent / 100)
+          .clamp(80, 2000)
+          .toInt();
+      return CachedNetworkImage(
+        imageUrl: src,
+        fit: BoxFit.cover,
+        memCacheWidth: targetWidth,
+        errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
+      );
+    });
   }
 }

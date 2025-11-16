@@ -5,6 +5,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:get/get.dart';
 import 'settings_controller.dart';
 import '../../services/theme_service.dart';
+import '../../services/image_cache_settings_service.dart';
 import 'package:system_fonts/system_fonts.dart' as sf;
 
 class SettingsView extends GetView<SettingsController> {
@@ -27,35 +28,12 @@ class SettingsView extends GetView<SettingsController> {
           const SizedBox(height: 24),
           _appearanceSection(),
           const SizedBox(height: 24),
+          _imageCacheSection(),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
-}
-
-Widget _colorOption(Color c, VoidCallback onTap, {bool selected = false}) {
-  return InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(24),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: c,
-        shape: BoxShape.circle,
-        boxShadow: [
-          if (selected)
-            BoxShadow(color: c.withAlpha(140), blurRadius: 8, spreadRadius: 2),
-        ],
-        border: Border.all(
-          color: selected ? Colors.white : c.withAlpha(120),
-          width: selected ? 2.4 : 1.2,
-        ),
-      ),
-      child: selected ? const Icon(Icons.check, color: Colors.white) : null,
-    ),
-  );
 }
 
 Widget _appearanceSection() {
@@ -93,7 +71,6 @@ Widget _appearanceSection() {
                     selected: themeService.seed.value == color,
                   ),
                 ),
-              // 编辑按钮入口
               _editColorButton(themeService),
             ],
           ),
@@ -101,6 +78,100 @@ Widget _appearanceSection() {
           _themeModeToggles(themeService),
           const SizedBox(height: 32),
           if (GetPlatform.isDesktop) _fontSection(themeService),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _colorOption(Color c, VoidCallback onTap, {bool selected = false}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(24),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: c,
+        shape: BoxShape.circle,
+        boxShadow: [
+          if (selected)
+            BoxShadow(color: c.withAlpha(140), blurRadius: 8, spreadRadius: 2),
+        ],
+        border: Border.all(
+          color: selected ? Colors.white : c.withAlpha(120),
+          width: selected ? 2.4 : 1.2,
+        ),
+      ),
+      child: selected ? const Icon(Icons.check, color: Colors.white) : null,
+    ),
+  );
+}
+
+Widget _imageCacheSection() {
+  final svc = Get.find<ImageCacheSettingsService>();
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('图片与缓存', style: Get.textTheme.titleMedium),
+          const SizedBox(height: 12),
+          Text('图片质量（百分比，数值越高越清晰）：', style: Get.textTheme.bodyMedium),
+          Obx(
+            () => Slider(
+              value: svc.qualityPercent.value.toDouble(),
+              min: 10,
+              max: 100,
+              divisions: 18,
+              label: '${svc.qualityPercent.value}%',
+              onChanged: (v) => svc.setQualityPercent(v.round()),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text('缓存大小限制 / 当前占用：', style: Get.textTheme.bodyMedium),
+          const SizedBox(height: 8),
+          Obx(() {
+            final current = svc.currentCacheMb.value;
+            final limit = svc.maxCacheMb.value;
+            return Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '当前 ${current.toStringAsFixed(1)} MB / 限制 $limit MB',
+                    style: Get.textTheme.bodySmall,
+                  ),
+                ),
+                IconButton(
+                  tooltip: '刷新',
+                  onPressed: () => svc.refreshCurrentCacheSize(),
+                  icon: const Icon(Icons.refresh),
+                ),
+                IconButton(
+                  tooltip: '清空缓存',
+                  onPressed: () async {
+                    await svc.clearAllCache();
+                    Get.snackbar('缓存', '已清空');
+                  },
+                  icon: const Icon(Icons.delete_sweep),
+                ),
+              ],
+            );
+          }),
+          Obx(
+            () => Slider(
+              value: svc.maxCacheMb.value.toDouble(),
+              min: 50,
+              max: 2000,
+              divisions: 39,
+              label: '${svc.maxCacheMb.value}MB',
+              onChanged: (v) => svc.setMaxCacheMb(v.round()),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text('超过限制会自动按最旧文件清理到 90% 以下。', style: Get.textTheme.bodySmall),
         ],
       ),
     ),
@@ -134,21 +205,9 @@ Widget _editColorButton(ThemeService service) {
 }
 
 Future<void> _showRgbDialog(ThemeService service) async {
-  int rOf(Color c) {
-    final argb = c.toARGB32();
-    return (argb >> 16) & 0xFF;
-  }
-
-  int gOf(Color c) {
-    final argb = c.toARGB32();
-    return (argb >> 8) & 0xFF;
-  }
-
-  int bOf(Color c) {
-    final argb = c.toARGB32();
-    return argb & 0xFF;
-  }
-
+  int rOf(Color c) => (c.toARGB32() >> 16) & 0xFF;
+  int gOf(Color c) => (c.toARGB32() >> 8) & 0xFF;
+  int bOf(Color c) => c.toARGB32() & 0xFF;
   final rCtrl = TextEditingController(text: rOf(service.seed.value).toString());
   final gCtrl = TextEditingController(text: gOf(service.seed.value).toString());
   final bCtrl = TextEditingController(text: bOf(service.seed.value).toString());
@@ -162,14 +221,14 @@ Future<void> _showRgbDialog(ThemeService service) async {
             final r = int.tryParse(rCtrl.text) ?? rOf(preview);
             final g = int.tryParse(gCtrl.text) ?? gOf(preview);
             final b = int.tryParse(bCtrl.text) ?? bOf(preview);
-            setState(
-              () => preview = Color.fromARGB(
+            setState(() {
+              preview = Color.fromARGB(
                 255,
                 r.clamp(0, 255),
                 g.clamp(0, 255),
                 b.clamp(0, 255),
-              ),
-            );
+              );
+            });
           }
 
           return AlertDialog(
@@ -284,14 +343,12 @@ Widget _moreFontsButton(ThemeService service) {
     icon: const Icon(Icons.more_horiz),
     label: const Text('更多...'),
     onPressed: () async {
-      // 获取系统字体列表
       List<String> fonts = await service.getInstalledFonts();
       fonts = fonts..sort();
       if (fonts.isEmpty) {
         Get.snackbar('字体', '未能获取系统字体列表');
         return;
       }
-      // 弹出对话框多选 / 单选
       await showDialog(
         context: Get.context!,
         builder: (context) {
@@ -327,6 +384,43 @@ Widget _moreFontsButton(ThemeService service) {
         },
       );
     },
+  );
+}
+
+Widget _themeModeToggles(ThemeService service) {
+  return Obx(() {
+    final mode = service.mode.value;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('主题模式', style: Get.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          children: [
+            _modeChip('跟随系统', ThemeMode.system, mode, service),
+            _modeChip('浅色', ThemeMode.light, mode, service),
+            _modeChip('深色', ThemeMode.dark, mode, service),
+          ],
+        ),
+      ],
+    );
+  });
+}
+
+Widget _modeChip(
+  String label,
+  ThemeMode value,
+  ThemeMode current,
+  ThemeService service,
+) {
+  final selected = value == current;
+  return FilterChip(
+    label: Text(label),
+    selected: selected,
+    onSelected: (_) => service.setMode(value),
+    selectedColor: Get.theme.colorScheme.primaryContainer,
+    checkmarkColor: Get.theme.colorScheme.onPrimaryContainer,
   );
 }
 
@@ -406,39 +500,6 @@ class _FontListState extends State<_FontList> {
   }
 }
 
-Widget _themeModeToggles(ThemeService service) {
-  return Obx(() {
-    final mode = service.mode.value;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('主题模式', style: Get.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 12,
-          children: [
-            _modeChip('跟随系统', ThemeMode.system, mode, service),
-            _modeChip('浅色', ThemeMode.light, mode, service),
-            _modeChip('深色', ThemeMode.dark, mode, service),
-          ],
-        ),
-      ],
-    );
-  });
-}
+// _themeModeToggles 已废弃，移除未引用方法
 
-Widget _modeChip(
-  String label,
-  ThemeMode value,
-  ThemeMode current,
-  ThemeService service,
-) {
-  final selected = value == current;
-  return FilterChip(
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => service.setMode(value),
-    selectedColor: Get.theme.colorScheme.primaryContainer,
-    checkmarkColor: Get.theme.colorScheme.onPrimaryContainer,
-  );
-}
+// _modeChip 已废弃，移除未引用方法

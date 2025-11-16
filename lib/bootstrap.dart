@@ -7,6 +7,7 @@ import 'services/auth_service.dart';
 import 'services/config_service.dart';
 import 'services/theme_service.dart';
 import 'services/permission_service.dart';
+import 'services/image_cache_settings_service.dart';
 import 'apis/client.dart';
 
 Future<void> bootstrap() async {
@@ -57,6 +58,11 @@ Future initDependencies() async {
   final themeService = ThemeService();
   await themeService.init();
   Get.put<ThemeService>(themeService, permanent: true);
+
+  // 图片缓存与质量设置服务
+  final imgCacheService = ImageCacheSettingsService();
+  await imgCacheService.init();
+  Get.put<ImageCacheSettingsService>(imgCacheService, permanent: true);
 
   final permService = PermissionService();
   // 登录态如果已恢复则尝试加载权限

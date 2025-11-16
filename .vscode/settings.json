@@ -2,7 +2,7 @@
 {
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
-        "pubspec.yaml": "pubspec.lock,analysis_options.yaml,.flutter-plugins-dependencies,.packages,.metadata,*.iml,.gitignore",
+        "pubspec.yaml": "pubspec.lock,analysis_options.yaml,.flutter-plugins-dependencies,.packages,.metadata,*.iml,.gitignore,devtools_options.yaml",
     },
     "editor.formatOnSave": true
 }

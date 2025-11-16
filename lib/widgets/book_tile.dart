@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:voidlord/services/config_service.dart';
 import '../services/image_cache_settings_service.dart';
 
 /// 通用书籍展示组件：封面 + 标题 + 作者。
@@ -89,7 +90,9 @@ class BookTile extends StatelessWidget {
     }
     final value = cover!;
     final isUrl = value.startsWith('http://') || value.startsWith('https://');
-    final src = isUrl ? value : 'http://localhost:9000/voidlord/$value';
+    final src = isUrl
+        ? value
+        : '${Get.find<ConfigService>().minioUrl}/voidlord/$value';
     final svc = Get.isRegistered<ImageCacheSettingsService>()
         ? Get.find<ImageCacheSettingsService>()
         : null;

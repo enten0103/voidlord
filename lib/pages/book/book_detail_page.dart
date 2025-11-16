@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:voidlord/services/config_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'book_detail_controller.dart';
 import '../../services/media_libraries_service.dart';
@@ -208,7 +209,8 @@ class BookDetailPage extends GetView<BookDetailController> {
                 ),
               )
             : CachedNetworkImage(
-                imageUrl: 'http://localhost:9000/voidlord/$cover',
+                imageUrl:
+                    '${Get.find<ConfigService>().minioUrl}/voidlord/$cover',
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) =>
                     Container(color: Colors.grey.shade300),

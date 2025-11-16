@@ -12,4 +12,6 @@ class ConfigService extends GetxService {
   }
 
   String get baseUrl => config.baseUrl;
+
+  String get minioUrl => config.minioUrl;
 }

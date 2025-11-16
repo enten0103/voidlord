@@ -59,10 +59,6 @@ class SideBanner {
     );
   }
 
-  /// 便捷：信息提示（info）。
-  ///
-  /// 背景优先使用 [ColorScheme.primaryContainer]，
-  /// 无上下文时使用接近的回退色。默认停留 3 秒。
   static void info(
     String message, {
     BannerSide side = BannerSide.right,
@@ -86,10 +82,6 @@ class SideBanner {
     );
   }
 
-  /// 便捷：警告（warning）。
-  ///
-  /// 背景优先使用 [ColorScheme.tertiaryContainer]，
-  /// 无上下文时使用回退色。默认停留 4 秒。
   static void warning(
     String message, {
     BannerSide side = BannerSide.right,
@@ -113,10 +105,6 @@ class SideBanner {
     );
   }
 
-  /// 便捷：危险/错误（danger）。
-  ///
-  /// 背景优先使用 [ColorScheme.errorContainer]，
-  /// 无上下文时使用回退色。默认停留 5 秒。
   static void danger(
     String message, {
     BannerSide side = BannerSide.right,
@@ -140,7 +128,6 @@ class SideBanner {
   }
 }
 
-/// 单例管理器：负责创建 Overlay Host 并向其添加/移除 Banner 项。
 class _SideBannerManager {
   _SideBannerManager._();
   static final _SideBannerManager instance = _SideBannerManager._();
@@ -149,7 +136,6 @@ class _SideBannerManager {
   _SideBannerOverlayState? _hostState;
   final List<_PendingEntry> _pending = [];
 
-  /// 确保 Overlay Host 已插入到根 Overlay（仅创建一次）。
   void _ensureHost(BuildContext context) {
     if (_entry != null && _hostState != null) return;
     final overlay = Overlay.of(context, rootOverlay: true);
@@ -172,7 +158,6 @@ class _SideBannerManager {
     _pending.clear();
   }
 
-  /// 将一个新条目发送给 Host，并按需截断消息文本。
   void _show({
     required String message,
     required BannerSide side,
@@ -190,7 +175,6 @@ class _SideBannerManager {
       return;
     }
     _ensureHost(ctx);
-    // 限制消息长度，避免超长导致溢出
     final int limit = (maxChars ?? 120).clamp(20, 400);
     final String msg = message.length > limit
         ? '${message.substring(0, limit - 1)}…'
@@ -205,7 +189,6 @@ class _SideBannerManager {
       dismissDuration: dismissDuration ?? const Duration(milliseconds: 160),
     );
     if (_hostState == null) {
-      // Host 还未完成挂载：先入等待队列，并在下一帧尝试刷新
       _pending.add(_PendingEntry(data, newestOnTop));
       WidgetsBinding.instance.addPostFrameCallback((_) => _flushPending());
     } else {
@@ -239,7 +222,6 @@ class _BannerData {
   });
 }
 
-/// Overlay 容器 Widget，承载左右两侧的 Banner 列表。
 class _SideBannerOverlay extends StatefulWidget {
   final void Function(_SideBannerOverlayState) onStateReady;
   const _SideBannerOverlay({required this.onStateReady});
@@ -248,7 +230,6 @@ class _SideBannerOverlay extends StatefulWidget {
   State<_SideBannerOverlay> createState() => _SideBannerOverlayState();
 }
 
-/// Overlay 容器的 State，维护左右两侧的 Banner 列表及其渲染。
 class _SideBannerOverlayState extends State<_SideBannerOverlay> {
   final List<_BannerData> _left = [];
   final List<_BannerData> _right = [];
@@ -283,7 +264,6 @@ class _SideBannerOverlayState extends State<_SideBannerOverlay> {
     final media = MediaQuery.of(context);
     final topPadding = media.padding.top + 12;
     const gap = 8.0;
-    // 最大宽度限制为屏幕宽度的一半（留出侧边距），确保不超过半屏
     const sidePadding = 12.0;
     final half = media.size.width * 0.5;
     final double maxWidth = math.max(0.0, half - sidePadding);
@@ -325,7 +305,6 @@ class _SideBannerOverlayState extends State<_SideBannerOverlay> {
   }
 }
 
-/// 单侧竖直堆叠的 Banner 列，控制间距与最大宽度。
 class _BannerColumn extends StatelessWidget {
   final List<_BannerData> items;
   final void Function(_BannerData) onClose;
@@ -362,7 +341,6 @@ class _BannerColumn extends StatelessWidget {
 }
 
 class _BannerCard extends StatefulWidget {
-  /// 单个 Banner 项（含动画、手势、自动消失与固定逻辑）。
   final _BannerData data;
   final VoidCallback onClose;
   final double maxWidth;
@@ -379,19 +357,15 @@ class _BannerCard extends StatefulWidget {
 
 class _BannerCardState extends State<_BannerCard>
     with SingleTickerProviderStateMixin {
-  /// 入场/退场动画控制器；退场时长由 data.dismissDuration 指定。
   late final AnimationController _ac;
 
-  /// 位移动画：左右侧分别从 ±x 偏移进入；右侧最终会保留轻微正向偏移（微露出）。
   late final Animation<Offset> _offset;
 
-  /// 透明度动画：随入场/退场同步变化。
   late final Animation<double> _fade;
   Timer? _timer;
   double _closeScale = 1.0;
   double _dragPx = 0.0;
 
-  /// 是否已固定（被内侧滑动触发），固定后会取消自动消失并保持轻微内缩。
   bool _isPinned = false;
 
   @override
@@ -404,7 +378,6 @@ class _BannerCardState extends State<_BannerCard>
     );
     final isLeft = widget.data.side == BannerSide.left;
     final from = isLeft ? const Offset(-0.2, 0) : const Offset(0.2, 0);
-    // 右侧在最终状态保留一小段正向偏移，形成“部分隐藏在右侧”的效果
     final end = isLeft ? Offset.zero : const Offset(0.06, 0);
     _offset = Tween<Offset>(
       begin: from,
@@ -413,7 +386,6 @@ class _BannerCardState extends State<_BannerCard>
     _fade = CurvedAnimation(parent: _ac, curve: Curves.easeOut);
     _ac.forward();
 
-    // 到时自动关闭，先播放消失动画再移除
     _timer = Timer(widget.data.duration, _close);
   }
 
@@ -428,7 +400,6 @@ class _BannerCardState extends State<_BannerCard>
 
   void _onDragUpdate(DragUpdateDetails details) {
     setState(() {
-      // 水平拖动位移，适度限制范围
       _dragPx = (_dragPx + details.delta.dx).clamp(-120.0, 120.0);
     });
   }
@@ -436,7 +407,6 @@ class _BannerCardState extends State<_BannerCard>
   void _onDragEnd(DragEndDetails details) {
     final isLeft = widget.data.side == BannerSide.left;
     final vx = details.velocity.pixelsPerSecond.dx;
-    // 位移与速度双阈值判断
     const dxThreshold = 36.0;
     const vThreshold = 480.0;
 
@@ -444,11 +414,9 @@ class _BannerCardState extends State<_BannerCard>
     bool swipeInwardPin = false;
 
     if (isLeft) {
-      // 向左（负）关闭；向右（正）固定
       swipeToEdgeClose = _dragPx < -dxThreshold || vx < -vThreshold;
       swipeInwardPin = _dragPx > dxThreshold || vx > vThreshold;
     } else {
-      // 右侧：向右（正）关闭；向左（负）固定
       swipeToEdgeClose = _dragPx > dxThreshold || vx > vThreshold;
       swipeInwardPin = _dragPx < -dxThreshold || vx < -vThreshold;
     }
@@ -458,7 +426,6 @@ class _BannerCardState extends State<_BannerCard>
       return;
     }
     if (swipeInwardPin) {
-      // 固定后，取消自动消失，轻微往内侧停靠
       _timer?.cancel();
       _timer = null;
       _isPinned = true;
@@ -467,7 +434,6 @@ class _BannerCardState extends State<_BannerCard>
       });
       return;
     }
-    // 回弹：若已固定，则回到固定偏移；否则回到 0
     setState(() => _dragPx = _isPinned ? (isLeft ? 12.0 : -12.0) : 0.0);
   }
 
@@ -482,7 +448,6 @@ class _BannerCardState extends State<_BannerCard>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final bg = widget.data.color ?? scheme.surfaceContainerHighest;
-    // 当使用容器色作为背景时，自动匹配对应的 on*Container 前景色；否则回退到 onSurface
     final Color fg = () {
       if (widget.data.color == null) return scheme.onSurface;
       final c = bg;
@@ -513,7 +478,6 @@ class _BannerCardState extends State<_BannerCard>
               borderRadius: BorderRadius.circular(10),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  // 更小的下限，避免短消息也被拉得过宽
                   minWidth: math.min(widget.maxWidth, 140.0),
                   maxWidth: widget.maxWidth,
                 ),
@@ -541,13 +505,11 @@ class _BannerCardState extends State<_BannerCard>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // 关闭按钮：增加 InkWell 涟漪与按压缩放反馈
                       Material(
                         color: Colors.transparent,
                         shape: const CircleBorder(),
                         child: InkWell(
                           customBorder: const CircleBorder(),
-                          // 使用 withValues 替代 deprecated withOpacity
                           splashColor: fg.withValues(alpha: 0.18),
                           highlightColor: fg.withValues(alpha: 0.08),
                           onTap: _close,

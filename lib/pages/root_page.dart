@@ -27,7 +27,7 @@ class RootPage extends GetView<RootController> {
       final titles = [
         '广场',
         '搜索',
-        '收藏',
+        '媒体库',
         if (hasUpload) '上传',
         if (hasPermMgmt) '权限',
         if (hasRecommend) '推荐',
@@ -36,7 +36,7 @@ class RootPage extends GetView<RootController> {
       // 确保控制器已注册（RootBinding 中注册 Service 后此处只需懒加载页面控制器）
       final pages = [
         const SquarePage(),
-  const BookSearchPage(),
+        const BookSearchPage(),
         const MediaLibrariesPage(),
         if (hasUpload) const UploadListPage(),
         if (hasPermMgmt) const PermissionsPage(),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
@@ -178,10 +179,10 @@ class BookDetailPage extends GetView<BookDetailController> {
               ).textTheme.titleMedium?.copyWith(color: Colors.black54),
             ),
           ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 24),
         _ratingSection(context),
         if (description != null && description.trim().isNotEmpty) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 24),
           Text('简介', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 6),
           Text(description, style: Theme.of(context).textTheme.bodyMedium),
@@ -206,10 +207,10 @@ class BookDetailPage extends GetView<BookDetailController> {
                   child: Icon(Icons.book, size: 64, color: Colors.black45),
                 ),
               )
-            : Image.network(
-                'http://localhost:9000/voidlord/$cover',
+            : CachedNetworkImage(
+                imageUrl: 'http://localhost:9000/voidlord/$cover',
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
+                errorWidget: (_, __, ___) =>
                     Container(color: Colors.grey.shade300),
               ),
       ),
@@ -244,8 +245,6 @@ class BookDetailPage extends GetView<BookDetailController> {
           _metaLine('创建时间', book.createdAt!.toLocal().toString()),
         if (book.updatedAt != null)
           _metaLine('更新时间', book.updatedAt!.toLocal().toString()),
-        const SizedBox(height: 18),
-        _ratingSection(Get.context),
       ],
     );
   }
@@ -309,19 +308,21 @@ class BookDetailPage extends GetView<BookDetailController> {
             ],
           ),
           const SizedBox(height: 4),
-            Text(
-              count > 0
-                  ? '平均 ${avg.toStringAsFixed(1)} / 5 · 共 $count 条评分'
-                  : '尚无评分，点击星星进行评分',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+          Text(
+            count > 0
+                ? '平均 ${avg.toStringAsFixed(1)} / 5 · 共 $count 条评分'
+                : '尚无评分，点击星星进行评分',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           if (err != null)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
                 err,
                 style: TextStyle(
-                    color: Theme.of(context).colorScheme.error, fontSize: 12),
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
               ),
             ),
         ],

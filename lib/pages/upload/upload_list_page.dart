@@ -80,7 +80,8 @@ class UploadListPage extends GetView<UploadListController> {
                   slivers: [
                     AdaptiveBookSliverGrid(
                       books: controller.books,
-                      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
+                      onTap: (b) =>
+                          Get.toNamed(Routes.bookDetail, arguments: b.id),
                       onLongPress: (b) => _onTileLongPress(context, b),
                     ),
                     SliverToBoxAdapter(
@@ -124,7 +125,7 @@ class UploadListPage extends GetView<UploadListController> {
   }
 
   void _onTileLongPress(BuildContext context, BookDto b) async {
-  // 标签解析逻辑已在网格组件中处理，这里不再使用本地变量，仅保留方法签名
+    // 标签解析逻辑已在网格组件中处理，这里不再使用本地变量，仅保留方法签名
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(

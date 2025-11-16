@@ -87,7 +87,7 @@ class BookDetailController extends GetxController {
       myRating.value = r.myRating;
       avgRating.value = r.avg;
       ratingCount.value = r.count;
-  SideBanner.info('评分成功: ${r.myRating}');
+      SideBanner.info('评分成功: ${r.myRating}');
     } catch (e) {
       if (e is BooksApiError && e.statusCode == 401) {
         SideBanner.warning('请先登录后评分');

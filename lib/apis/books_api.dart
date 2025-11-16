@@ -177,7 +177,8 @@ extension BooksApi on Api {
       '/books/$id/rating',
       data: {'score': score},
     );
-    if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+    if ((res.statusCode == 200 || res.statusCode == 201) &&
+        res.data is Map<String, dynamic>) {
       return RatingResponse.fromJson(res.data as Map<String, dynamic>);
     }
     switch (res.statusCode) {

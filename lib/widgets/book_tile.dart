@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// 通用书籍展示组件：封面 + 标题 + 作者。
@@ -62,9 +63,7 @@ class BookTile extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.labelSmall?.copyWith(color: Colors.black54),
+                style: Theme.of(context).textTheme.labelSmall,
               ),
             ],
           ),
@@ -85,10 +84,10 @@ class BookTile extends StatelessWidget {
     final value = cover!;
     final isUrl = value.startsWith('http://') || value.startsWith('https://');
     final src = isUrl ? value : 'http://localhost:9000/voidlord/$value';
-    return Image.network(
-      src,
+    return CachedNetworkImage(
+      imageUrl: src,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300),
+      errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
     );
   }
 }

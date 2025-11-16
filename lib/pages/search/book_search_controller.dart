@@ -19,16 +19,21 @@ class BookSearchController extends GetxController {
   final simpleQuery = ''.obs; // 简单搜索输入（匹配 title 标签）
   final selectedSimpleKey = 'TITLE'.obs; // 当前简单搜索使用的标签 KEY
   final simpleSuggestionsVisible = true.obs; // 是否显示简单候选
-  late final TextEditingController simpleTextController = TextEditingController();
+  late final TextEditingController simpleTextController =
+      TextEditingController();
 
   Api get api => Get.find<Api>();
 
   void addCondition() {
     conditions.add(BookSearchCondition(target: '', op: 'eq', value: ''));
+    conditions.refresh();
   }
 
   void removeCondition(int index) {
-    if (index >= 0 && index < conditions.length) conditions.removeAt(index);
+    if (index >= 0 && index < conditions.length) {
+      conditions.removeAt(index);
+      conditions.refresh();
+    }
   }
 
   void updateCondition(int index, {String? target, String? op, String? value}) {
@@ -39,6 +44,7 @@ class BookSearchController extends GetxController {
       op: op ?? old.op,
       value: value ?? old.value,
     );
+    conditions.refresh();
   }
 
   Future<void> search({bool reset = true}) async {
@@ -142,7 +148,6 @@ class BookSearchController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 直接响应输入变化：输入为空时清空结果
     ever<String>(simpleQuery, (val) {
       final q = val.trim();
       if (q.isEmpty) {
@@ -152,12 +157,10 @@ class BookSearchController extends GetxController {
         hasMore.value = false;
         simpleSuggestionsVisible.value = false;
       } else {
-        // 有输入时显示候选（除非已被点击关闭重新输入会再打开）
         if (!simpleSuggestionsVisible.value) {
           simpleSuggestionsVisible.value = true;
         }
       }
-      // 仅在程序触发（如候选点击）或外部赋值与当前输入不一致时同步 TextField 内容
       if (simpleTextController.text != val) {
         simpleTextController.value = TextEditingValue(
           text: val,

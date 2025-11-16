@@ -107,10 +107,7 @@ class SquarePage extends GetView<SquareController> {
     );
   }
 
-  Widget _sectionBooksSliverWrapper(
-    BuildContext context,
-    dynamic sec,
-  ) {
+  Widget _sectionBooksSliverWrapper(BuildContext context, dynamic sec) {
     final libId = sec.mediaLibraryId;
     if (libId == 0) {
       return Text('未关联媒体库', style: Theme.of(context).textTheme.bodySmall);

@@ -332,7 +332,9 @@ class RecommendationsPage extends GetView<RecommendationsController> {
       if (seen.add(m.id)) dedup.add(m);
     }
     final ids = dedup.map((e) => e.id).toSet();
-    final safeValue = (current != null && ids.contains(current)) ? current : null;
+    final safeValue = (current != null && ids.contains(current))
+        ? current
+        : null;
     final items = dedup
         .map(
           (e) => DropdownMenuItem<int>(
@@ -360,11 +362,7 @@ class RecommendationsPage extends GetView<RecommendationsController> {
     RecommendationSectionDto sec,
   ) {
     // 汇总可选库（含系统/虚拟）
-    final all = <MediaLibraryDto>[
-      if (libs.readingRecord.value != null) libs.readingRecord.value!,
-      if (libs.virtualMyUploaded.value != null) libs.virtualMyUploaded.value!,
-      ...libs.myLibraries,
-    ];
+    final all = <MediaLibraryDto>[...libs.myLibraries];
     final seen = <int>{};
     final dedup = <MediaLibraryDto>[];
     for (final m in all) {
@@ -380,13 +378,12 @@ class RecommendationsPage extends GetView<RecommendationsController> {
         )
         .toList();
     if (!exists && sec.mediaLibraryId > 0) {
-      // 外部开放库（不在我的列表中），保留其当前选项
       items.insert(
         0,
         DropdownMenuItem<int>(
           value: sec.mediaLibraryId,
           child: Text(
-            '外部开放库: ${sec.mediaLibraryName ?? sec.mediaLibraryId}',
+            '${sec.mediaLibraryName ?? sec.mediaLibraryId}',
             overflow: TextOverflow.ellipsis,
           ),
         ),

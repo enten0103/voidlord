@@ -20,8 +20,8 @@ class MediaLibrariesService extends GetxService {
     try {
       final list = await api.listMyLibraries();
       myLibraries.assignAll(list.where((e) => !e.isSystem));
-      readingRecord.value = await api.getReadingRecordLibrary();
       virtualMyUploaded.value = await api.getVirtualMyUploadedLibrary();
+      readingRecord.value = await api.getReadingRecordLibrary();
       _initialized = true;
     } catch (e) {
       final msg = _extractMessage(e) ?? '加载媒体库失败';

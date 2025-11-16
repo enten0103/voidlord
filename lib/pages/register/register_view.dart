@@ -107,14 +107,21 @@ class RegisterView extends GetView<RegisterController> {
                           children: [
                             Text(
                               '密码强度: ',
-                              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                             ),
                             Text(
                               controller.passwordStrengthLabel,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: controller.passwordStrengthColor(context),
+                                color: controller.passwordStrengthColor(
+                                  context,
+                                ),
                               ),
                             ),
                           ],
@@ -132,7 +139,8 @@ class RegisterView extends GetView<RegisterController> {
                       if (controller.confirm.value.isEmpty) {
                         return const SizedBox.shrink();
                       }
-                      if (controller.confirm.value != controller.password.value) {
+                      if (controller.confirm.value !=
+                          controller.password.value) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 6),
                           child: Text(

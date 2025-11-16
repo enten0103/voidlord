@@ -14,7 +14,8 @@ extension AuthApi on Api {
         '/auth/login',
         data: {'username': username, 'password': password},
       );
-      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+      if ((res.statusCode == 200 || res.statusCode == 201) &&
+          res.data is Map<String, dynamic>) {
         return LoginResponse.fromJson(res.data as Map<String, dynamic>);
       }
       throw DioException(
@@ -48,13 +49,10 @@ extension AuthApi on Api {
     try {
       final Response res = await client.post(
         '/auth/register',
-        data: {
-          'username': username,
-          'email': email,
-          'password': password,
-        },
+        data: {'username': username, 'email': email, 'password': password},
       );
-      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+      if ((res.statusCode == 200 || res.statusCode == 201) &&
+          res.data is Map<String, dynamic>) {
         return LoginResponse.fromJson(res.data as Map<String, dynamic>);
       }
       throw DioException(

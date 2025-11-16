@@ -4,6 +4,7 @@ import 'recommendations_controller.dart';
 import '../../services/media_libraries_service.dart';
 import '../../widgets/side_baner.dart';
 import '../../models/recommendations_models.dart';
+import '../../models/media_library_models.dart';
 
 class RecommendationsPage extends GetView<RecommendationsController> {
   const RecommendationsPage({super.key});
@@ -318,11 +319,21 @@ class RecommendationsPage extends GetView<RecommendationsController> {
     ValueChanged<int?> onChanged,
     int? current,
   ) {
-    final ids = libs.myLibraries.map((e) => e.id).toSet();
-    final safeValue = (current != null && ids.contains(current))
-        ? current
-        : null;
-    final items = libs.myLibraries
+    // 可选库包括：系统阅读记录库、虚拟“我上传”库、我的库列表
+    final all = <MediaLibraryDto>[
+      if (libs.readingRecord.value != null) libs.readingRecord.value!,
+      if (libs.virtualMyUploaded.value != null) libs.virtualMyUploaded.value!,
+      ...libs.myLibraries,
+    ];
+    // 去重
+    final seen = <int>{};
+    final dedup = <MediaLibraryDto>[];
+    for (final m in all) {
+      if (seen.add(m.id)) dedup.add(m);
+    }
+    final ids = dedup.map((e) => e.id).toSet();
+    final safeValue = (current != null && ids.contains(current)) ? current : null;
+    final items = dedup
         .map(
           (e) => DropdownMenuItem<int>(
             value: e.id,
@@ -335,7 +346,7 @@ class RecommendationsPage extends GetView<RecommendationsController> {
       items.add(const DropdownMenuItem<int>(value: null, child: Text('暂无媒体库')));
     }
     return DropdownButtonFormField<int>(
-      value: safeValue,
+      initialValue: safeValue,
       decoration: const InputDecoration(labelText: '媒体库'),
       items: items,
       onChanged: onChanged,
@@ -348,9 +359,19 @@ class RecommendationsPage extends GetView<RecommendationsController> {
     MediaLibrariesService libs,
     RecommendationSectionDto sec,
   ) {
-    final ids = libs.myLibraries.map((e) => e.id).toSet();
-    final exists = ids.contains(sec.mediaLibraryId);
-    final items = libs.myLibraries
+    // 汇总可选库（含系统/虚拟）
+    final all = <MediaLibraryDto>[
+      if (libs.readingRecord.value != null) libs.readingRecord.value!,
+      if (libs.virtualMyUploaded.value != null) libs.virtualMyUploaded.value!,
+      ...libs.myLibraries,
+    ];
+    final seen = <int>{};
+    final dedup = <MediaLibraryDto>[];
+    for (final m in all) {
+      if (seen.add(m.id)) dedup.add(m);
+    }
+    final exists = dedup.any((e) => e.id == sec.mediaLibraryId);
+    final items = dedup
         .map(
           (lib) => DropdownMenuItem<int>(
             value: lib.id,
@@ -358,21 +379,24 @@ class RecommendationsPage extends GetView<RecommendationsController> {
           ),
         )
         .toList();
-
-    // 如果关联库已不存在，提供占位条目避免 DropdownButton 断言，同时 value 设为 null
-    if (!exists) {
+    if (!exists && sec.mediaLibraryId > 0) {
+      // 外部开放库（不在我的列表中），保留其当前选项
       items.insert(
         0,
-        const DropdownMenuItem<int>(value: null, child: Text('已删除(请选择)')),
+        DropdownMenuItem<int>(
+          value: sec.mediaLibraryId,
+          child: Text(
+            '外部开放库: ${sec.mediaLibraryName ?? sec.mediaLibraryId}',
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       );
     }
-
     if (items.isEmpty) {
       items.add(const DropdownMenuItem<int>(value: null, child: Text('暂无媒体库')));
     }
-
     return DropdownButtonFormField<int>(
-      value: exists ? sec.mediaLibraryId : null,
+      initialValue: sec.mediaLibraryId > 0 ? sec.mediaLibraryId : null,
       isExpanded: true,
       decoration: const InputDecoration(labelText: '关联媒体库'),
       items: items,

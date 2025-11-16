@@ -72,6 +72,47 @@ class AuthService extends GetxService {
     }
   }
 
+  Future<bool> register(String username, String email, String password) async {
+    lastError.value = null;
+    if (Get.testMode) {
+      if (username.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
+        loggedIn.value = true;
+        return true;
+      }
+      lastError.value = '注册信息不完整';
+      return false;
+    }
+    try {
+      final LoginResponse data = await Get.find<Api>().register(
+        username: username,
+        email: email,
+        password: password,
+      );
+      if (data.accessToken.isNotEmpty) {
+        _token = data.accessToken;
+        Get.find<Api>().setBearerToken(_token);
+        try {
+          final sp = await SharedPreferences.getInstance();
+          await sp.setString(_kTokenKey, _token!);
+        } catch (_) {}
+        if (Get.isRegistered<PermissionService>()) {
+          await Get.find<PermissionService>().load();
+        }
+        loggedIn.value = true;
+        userId.value = data.user.id;
+        return true;
+      }
+      lastError.value = '注册失败';
+      return false;
+    } on AuthApiError catch (e) {
+      lastError.value = e.message;
+      return false;
+    } catch (_) {
+      lastError.value = '未知错误';
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     loggedIn.value = false;
     _token = null;

@@ -47,8 +47,6 @@ class BookSearchPage extends GetView<BookSearchController> {
         // 头部操作行：仅按钮和清空状态需要响应
         Row(
           children: [
-            Text('条件 (AND)', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(width: 12),
             Obx(
               () => FilledButton.icon(
                 onPressed: controller.loading.value
@@ -73,12 +71,6 @@ class BookSearchPage extends GetView<BookSearchController> {
         const SizedBox(height: 8),
         // 条件列表：单独监听，减少与头部/尾部耦合
         Obx(() {
-          if (controller.conditions.isEmpty) {
-            return Text(
-              '未添加条件：后端会返回全部书籍（可能很多），建议至少添加一个。',
-              style: Theme.of(context).textTheme.bodySmall,
-            );
-          }
           return Column(
             children: List.generate(
               controller.conditions.length,

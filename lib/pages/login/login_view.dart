@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../widgets/app_title_bar.dart';
 import 'login_controller.dart';
+import '../../routes/app_routes.dart';
 
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
@@ -117,6 +118,12 @@ class LoginView extends GetView<LoginController> {
                               : const Text('立即登录'),
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      key: const Key('goRegisterButton'),
+                      onPressed: () => Get.toNamed(Routes.register),
+                      child: const Text('没有账号？去注册'),
                     ),
                   ],
                 ),

@@ -38,6 +38,40 @@ extension AuthApi on Api {
       throw AuthApiError('发生未知错误');
     }
   }
+
+  /// 调用后端注册接口：成功后直接返回登录态结构
+  Future<LoginResponse> register({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final Response res = await client.post(
+        '/auth/register',
+        data: {
+          'username': username,
+          'email': email,
+          'password': password,
+        },
+      );
+      if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
+        return LoginResponse.fromJson(res.data as Map<String, dynamic>);
+      }
+      throw DioException(
+        requestOptions: res.requestOptions,
+        response: res,
+        message: 'Unexpected response',
+        type: DioExceptionType.badResponse,
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      if (status == 400) throw AuthApiError('请求不合法，请检查输入');
+      if (status == 409) throw AuthApiError('用户名或邮箱已存在');
+      throw AuthApiError('网络错误，请稍后重试');
+    } catch (_) {
+      throw AuthApiError('发生未知错误');
+    }
+  }
 }
 
 class AuthApiError implements Exception {

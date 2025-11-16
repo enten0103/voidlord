@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../pages/login/login_view.dart';
 import '../bindings/login_binding.dart';
 import '../pages/root_page.dart';
+import '../pages/register/register_view.dart';
+import '../pages/register/register_binding.dart';
 import '../bindings/root_binding.dart';
 import '../pages/profile/profile_edit_view.dart';
 import '../pages/settings/settings_view.dart';
@@ -35,6 +37,11 @@ class AppPages {
       name: Routes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: Routes.register,
+      page: () => const RegisterView(),
+      binding: RegisterBinding(),
     ),
     GetPage(
       name: Routes.root,

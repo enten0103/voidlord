@@ -311,7 +311,7 @@ class BookDetailPage extends GetView<BookDetailController> {
           Text(
             count > 0
                 ? '平均 ${avg.toStringAsFixed(1)} / 5 · 共 $count 条评分'
-                : '尚无评分，点击星星进行评分',
+                : '尚无评分',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           if (err != null)

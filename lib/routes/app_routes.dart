@@ -1,6 +1,7 @@
 class Routes {
   static const String root = '/';
   static const String login = '/login';
+  static const String register = '/register';
   static const String mediaLibraryDetail = '/media-library'; // 需要拼接 /:id
   static const String profileEdit = '/profile/edit';
   static const String settings = '/settings';

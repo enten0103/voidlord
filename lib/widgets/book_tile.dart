@@ -88,11 +88,7 @@ class BookTile extends StatelessWidget {
         ),
       );
     }
-    final value = cover!;
-    final isUrl = value.startsWith('http://') || value.startsWith('https://');
-    final src = isUrl
-        ? value
-        : '${Get.find<ConfigService>().minioUrl}/voidlord/$value';
+    final src = '${Get.find<ConfigService>().minioUrl}/voidlord/$cover';
     final svc = Get.isRegistered<ImageCacheSettingsService>()
         ? Get.find<ImageCacheSettingsService>()
         : null;

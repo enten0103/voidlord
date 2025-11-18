@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../services/config_service.dart';
-import '../config/app_environment.dart';
 
 class Api {
   final Dio client;
@@ -10,7 +9,7 @@ class Api {
   Api()
     : client = Dio(
         BaseOptions(
-          baseUrl: _resolveBaseUrl(),
+          baseUrl: Get.find<ConfigService>().baseUrl,
           connectTimeout: const Duration(seconds: 5),
           receiveTimeout: const Duration(seconds: 10),
           sendTimeout: const Duration(seconds: 10),
@@ -31,13 +30,6 @@ class Api {
         },
       ),
     );
-  }
-
-  static String _resolveBaseUrl() {
-    if (Get.isRegistered<ConfigService>()) {
-      return Get.find<ConfigService>().baseUrl;
-    }
-    return AppEnvironment.baseUrl;
   }
 
   void setBearerToken(String? token) {

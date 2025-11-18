@@ -28,7 +28,3 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
-  assets:
-    - assets/config/dev.json
-    - assets/config/test.json
-    - assets/config/prod.json

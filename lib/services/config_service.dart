@@ -1,15 +1,12 @@
 import 'package:get/get.dart';
-import '../config/app_environment.dart';
+import 'package:voidlord/config/app_config_dev.dart';
+import 'package:voidlord/config/app_config_release.dart';
 import '../config/app_config.dart';
 
 class ConfigService extends GetxService {
-  late final AppConfig config;
-
-  Future<ConfigService> init() async {
-    final flavor = AppEnvironment.flavor;
-    config = await loadAppConfig(flavor);
-    return this;
-  }
+  late final AppConfig config = bool.fromEnvironment('dart.vm.product')
+      ? ReleaseConfig
+      : DevConfig;
 
   String get baseUrl => config.baseUrl;
 

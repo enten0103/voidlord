@@ -21,57 +21,5 @@
             "type": "dart",
             "flutterMode": "release"
         },
-        {
-            "name": "Flutter Windows - dev",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "windows",
-            "toolArgs": [
-                "--dart-define=FLAVOR=dev",
-                "--dart-define=BACKEND_BASE_URL=http://localhost:8080"
-            ]
-        },
-        {
-            "name": "Flutter Windows - test",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "windows",
-            "toolArgs": [
-                "--dart-define=FLAVOR=test",
-                "--dart-define=BACKEND_BASE_URL=https://test.api.example.com"
-            ]
-        },
-        {
-            "name": "Flutter Windows - prod",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "windows",
-            "flutterMode": "release",
-            "toolArgs": [
-                "--dart-define=FLAVOR=prod",
-                "--dart-define=BACKEND_BASE_URL=https://api.example.com"
-            ]
-        },
-        {
-            "name": "Flutter Chrome - test",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "chrome",
-            "toolArgs": [
-                "--dart-define=FLAVOR=test",
-                "--dart-define=BACKEND_BASE_URL=https://staging.example.com"
-            ]
-        },
-        {
-            "name": "Flutter Android - prod",
-            "request": "launch",
-            "type": "dart",
-            "deviceId": "android",
-            "flutterMode": "release",
-            "toolArgs": [
-                "--dart-define=FLAVOR=prod",
-                "--dart-define=BACKEND_BASE_URL=https://api.example.com"
-            ]
-        }
     ]
 }

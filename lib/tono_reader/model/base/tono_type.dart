@@ -1,0 +1,1 @@
+enum TonoType { local, net }

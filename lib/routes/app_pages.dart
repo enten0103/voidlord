@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:voidlord/bindings/reader_binding.dart';
+import 'package:voidlord/pages/reader/reader_view.dart';
 import '../pages/login/login_view.dart';
 import '../bindings/login_binding.dart';
 import '../pages/root/root_page.dart';
@@ -83,6 +85,11 @@ class AppPages {
       page: () => const BookDetailPage(),
       middlewares: [AuthMiddleware()],
       binding: BookDetailBinding(),
+    ),
+    GetPage(
+      name: Routes.readerPage,
+      page: () => const ReaderPage(),
+      binding: ReaderBinding(),
     ),
   ];
 

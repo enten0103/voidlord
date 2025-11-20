@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/painting.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,16 +13,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 1. filterQuality (对解码与缩放的质量提示)
 /// 2. scaleFactor (根据组件尺寸计算请求/缓存的像素宽度缩放系数)
 /// 3. compressionQuality (未来用于后端 query，如 ?q=80；暂预留)
-/// 4. maxCacheMb (超过后触发修剪)
-/// 并可实时统计当前缓存占用（MB）。
+/// 4. maxMemoryCacheMb (内存缓存大小限制)
+/// 并可实时统计当前磁盘缓存占用（MB）。
 
 class ImageCacheSettingsService extends GetxService {
   static const _prefQualityKey = 'img_quality_percent';
-  static const _prefMaxCacheKey = 'img_max_cache_mb';
+  static const _prefMaxMemoryCacheKey = 'img_max_memory_cache_mb';
 
   final qualityPercent = 80.obs; // 10-100
-  final maxCacheMb = 200.obs; // 默认 200MB 上限
-  final currentCacheMb = 0.0.obs;
+  final maxMemoryCacheMb = 100.obs; // 默认 100MB 内存缓存
+  final diskCacheMb = 0.0.obs;
   final measuring = false.obs;
 
   /// 初始化：读取偏好并计算当前缓存大小。
@@ -29,9 +30,17 @@ class ImageCacheSettingsService extends GetxService {
     final prefs = await SharedPreferences.getInstance();
     qualityPercent.value =
         prefs.getInt(_prefQualityKey) ?? qualityPercent.value;
-    maxCacheMb.value = prefs.getInt(_prefMaxCacheKey) ?? maxCacheMb.value;
-    unawaited(refreshCurrentCacheSize());
+    maxMemoryCacheMb.value =
+        prefs.getInt(_prefMaxMemoryCacheKey) ?? maxMemoryCacheMb.value;
+    _applyMemoryCacheLimit();
+    unawaited(refreshDiskCacheSize());
     return this;
+  }
+
+  void _applyMemoryCacheLimit() {
+    // maximumSizeBytes is in bytes
+    PaintingBinding.instance.imageCache.maximumSizeBytes =
+        maxMemoryCacheMb.value * 1024 * 1024;
   }
 
   Future<void> setQualityPercent(int v) async {
@@ -40,31 +49,30 @@ class ImageCacheSettingsService extends GetxService {
     await prefs.setInt(_prefQualityKey, qualityPercent.value);
   }
 
-  Future<void> setMaxCacheMb(int mb) async {
-    maxCacheMb.value = mb.clamp(50, 2000); // 限制在 50MB - 2GB
+  Future<void> setMaxMemoryCacheMb(int mb) async {
+    maxMemoryCacheMb.value = mb.clamp(50, 500); // 限制在 50MB - 500MB
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_prefMaxCacheKey, maxCacheMb.value);
-    unawaited(applyTrimmingIfNeeded());
+    await prefs.setInt(_prefMaxMemoryCacheKey, maxMemoryCacheMb.value);
+    _applyMemoryCacheLimit();
   }
 
   /// 估算默认缓存目录大小。cached_network_image 使用 DefaultCacheManager。
-  Future<void> refreshCurrentCacheSize() async {
+  Future<void> refreshDiskCacheSize() async {
     if (measuring.value) return;
     measuring.value = true;
     try {
       final tempDir = await getTemporaryDirectory();
       final cacheDir = Directory('${tempDir.path}/libCachedImageData');
       if (!cacheDir.existsSync()) {
-        currentCacheMb.value = 0;
+        diskCacheMb.value = 0;
       } else {
         final bytes = await _dirSize(cacheDir);
-        currentCacheMb.value = bytes / (1024 * 1024);
+        diskCacheMb.value = bytes / (1024 * 1024);
       }
     } catch (e) {
       // 忽略异常
     } finally {
       measuring.value = false;
-      unawaited(applyTrimmingIfNeeded());
     }
   }
 
@@ -80,40 +88,9 @@ class ImageCacheSettingsService extends GetxService {
     return total;
   }
 
-  /// 如果超出限制，按最旧文件优先删除直到降到上限 90% 以下。
-  Future<void> applyTrimmingIfNeeded() async {
-    if (currentCacheMb.value <= maxCacheMb.value) return;
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final cacheDir = Directory('${tempDir.path}/libCachedImageData');
-      if (!cacheDir.existsSync()) return;
-      final files = <File>[];
-      final stream = cacheDir.list(recursive: true, followLinks: false);
-      await for (final e in stream) {
-        if (e is File) files.add(e);
-      }
-      files.sort(
-        (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
-      ); // 旧的在前
-      double target = maxCacheMb.value * 0.9; // 修剪到 90%
-      double current = currentCacheMb.value;
-      for (final f in files) {
-        if (current <= target) break;
-        final len = await f.length();
-        try {
-          await f.delete();
-        } catch (_) {}
-        current -= len / (1024 * 1024);
-      }
-      currentCacheMb.value = current;
-    } catch (_) {
-      // 忽略
-    }
-  }
-
-  /// 清空全部缓存。
-  Future<void> clearAllCache() async {
+  /// 清空全部磁盘缓存。
+  Future<void> clearDiskCache() async {
     await DefaultCacheManager().emptyCache();
-    await refreshCurrentCacheSize();
+    await refreshDiskCacheSize();
   }
 }

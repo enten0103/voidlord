@@ -131,47 +131,46 @@ Widget _imageCacheSection() {
             ),
           ),
           const SizedBox(height: 20),
-          Text('缓存大小限制 / 当前占用：', style: Get.textTheme.bodyMedium),
+          Text('内存缓存限制 (重启生效)：', style: Get.textTheme.bodyMedium),
+          Obx(
+            () => Slider(
+              value: svc.maxMemoryCacheMb.value.toDouble(),
+              min: 50,
+              max: 500,
+              divisions: 9,
+              label: '${svc.maxMemoryCacheMb.value}MB',
+              onChanged: (v) => svc.setMaxMemoryCacheMb(v.round()),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text('磁盘缓存占用：', style: Get.textTheme.bodyMedium),
           const SizedBox(height: 8),
           Obx(() {
-            final current = svc.currentCacheMb.value;
-            final limit = svc.maxCacheMb.value;
+            final current = svc.diskCacheMb.value;
             return Row(
               children: [
                 Expanded(
                   child: Text(
-                    '当前 ${current.toStringAsFixed(1)} MB / 限制 $limit MB',
+                    '当前 ${current.toStringAsFixed(1)} MB',
                     style: Get.textTheme.bodySmall,
                   ),
                 ),
                 IconButton(
                   tooltip: '刷新',
-                  onPressed: () => svc.refreshCurrentCacheSize(),
+                  onPressed: () => svc.refreshDiskCacheSize(),
                   icon: const Icon(Icons.refresh),
                 ),
                 IconButton(
-                  tooltip: '清空缓存',
+                  tooltip: '清空磁盘缓存',
                   onPressed: () async {
-                    await svc.clearAllCache();
-                    Get.snackbar('缓存', '已清空');
+                    await svc.clearDiskCache();
+                    Get.snackbar('缓存', '已清空磁盘缓存');
                   },
                   icon: const Icon(Icons.delete_sweep),
                 ),
               ],
             );
           }),
-          Obx(
-            () => Slider(
-              value: svc.maxCacheMb.value.toDouble(),
-              min: 50,
-              max: 2000,
-              divisions: 39,
-              label: '${svc.maxCacheMb.value}MB',
-              onChanged: (v) => svc.setMaxCacheMb(v.round()),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text('超过限制会自动按最旧文件清理到 90% 以下。', style: Get.textTheme.bodySmall),
         ],
       ),
     ),

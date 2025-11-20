@@ -92,19 +92,42 @@ class ImageCacheSettingsService extends GetxService {
 
   Future<int> _dirSize(Directory dir) async {
     int total = 0;
-    final files = dir.list(recursive: true, followLinks: false);
-    await for (final entity in files) {
-      if (entity is File) {
-        final length = await entity.length();
-        total += length;
+    if (!await dir.exists()) return 0;
+    try {
+      final files = dir.list(recursive: true, followLinks: false);
+      await for (final entity in files) {
+        if (entity is File) {
+          final length = await entity.length();
+          total += length;
+        }
       }
+    } catch (e) {
+      // ignore
     }
     return total;
   }
 
   /// 清空全部磁盘缓存。
   Future<void> clearDiskCache() async {
+    // 1. 清理 CacheManager 记录
     await cacheManager.emptyCache();
+
+    // 2. 强制清理内存中的图片缓存
+    PaintingBinding.instance.imageCache.clear();
+    PaintingBinding.instance.imageCache.clearLiveImages();
+
+    // 3. 强制物理删除缓存目录（解决 CacheManager 可能残留孤儿文件的问题）
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final cacheDir = Directory(p.join(tempDir.path, _cacheKey));
+      if (await cacheDir.exists()) {
+        await cacheDir.delete(recursive: true);
+      }
+    } catch (e) {
+      print('Delete cache dir failed: $e');
+    }
+
+    // 4. 刷新统计
     await refreshDiskCacheSize();
   }
 }

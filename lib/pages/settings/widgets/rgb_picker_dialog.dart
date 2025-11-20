@@ -13,10 +13,16 @@ class RgbPickerDialog extends StatelessWidget {
     int gOf(Color c) => (c.toARGB32() >> 8) & 0xFF;
     int bOf(Color c) => c.toARGB32() & 0xFF;
 
-    final rCtrl = TextEditingController(text: rOf(service.seed.value).toString());
-    final gCtrl = TextEditingController(text: gOf(service.seed.value).toString());
-    final bCtrl = TextEditingController(text: bOf(service.seed.value).toString());
-    
+    final rCtrl = TextEditingController(
+      text: rOf(service.seed.value).toString(),
+    );
+    final gCtrl = TextEditingController(
+      text: gOf(service.seed.value).toString(),
+    );
+    final bCtrl = TextEditingController(
+      text: bOf(service.seed.value).toString(),
+    );
+
     final previewColor = service.seed.value.obs;
 
     void updatePreview() {
@@ -44,16 +50,18 @@ class RgbPickerDialog extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(child: _rgbField('B', bCtrl, updatePreview)),
               const SizedBox(width: 12),
-              Obx(() => AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: previewColor.value,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.black26),
+              Obx(
+                () => AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: previewColor.value,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.black26),
+                  ),
                 ),
-              )),
+              ),
             ],
           ),
           const SizedBox(height: 16),

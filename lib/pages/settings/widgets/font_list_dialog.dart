@@ -67,7 +67,10 @@ class FontListDialog extends StatelessWidget {
                           style: TextStyle(fontFamily: selected ? f : null),
                         ),
                         trailing: selected
-                            ? Icon(Icons.check, color: Get.theme.colorScheme.primary)
+                            ? Icon(
+                                Icons.check,
+                                color: Get.theme.colorScheme.primary,
+                              )
                             : null,
                         onTap: () async {
                           await service.applyFont(f);
@@ -93,7 +96,10 @@ class FontListDialog extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  TextButton(onPressed: () => Get.back(), child: const Text('关闭')),
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('关闭'),
+                  ),
                   const Spacer(),
                   FilledButton(
                     onPressed: () => Get.back(),

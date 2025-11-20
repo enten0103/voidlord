@@ -89,16 +89,7 @@ class BookTile extends StatelessWidget {
       );
     }
     final src = '${Get.find<ConfigService>().minioUrl}/voidlord/$cover';
-    final svc = Get.isRegistered<ImageCacheSettingsService>()
-        ? Get.find<ImageCacheSettingsService>()
-        : null;
-    if (svc == null) {
-      return CachedNetworkImage(
-        imageUrl: src,
-        fit: BoxFit.cover,
-        errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
-      );
-    }
+    final svc = Get.find<ImageCacheSettingsService>();
     return Obx(() {
       final percent = svc.qualityPercent.value;
       final dpr = MediaQuery.of(Get.context!).devicePixelRatio;

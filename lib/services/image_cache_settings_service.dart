@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:voidlord/widgets/side_baner.dart';
 
 /// 管理前端图片质量与缓存大小的服务。
 /// 提供以下可调参数：
@@ -124,7 +125,7 @@ class ImageCacheSettingsService extends GetxService {
         await cacheDir.delete(recursive: true);
       }
     } catch (e) {
-      print('Delete cache dir failed: $e');
+      SideBanner.danger('Delete cache dir failed: $e');
     }
 
     // 4. 刷新统计

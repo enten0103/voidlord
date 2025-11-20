@@ -69,7 +69,11 @@ class AppearanceSection extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             if (selected)
-              BoxShadow(color: c.withAlpha(140), blurRadius: 8, spreadRadius: 2),
+              BoxShadow(
+                color: c.withAlpha(140),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
           ],
           border: Border.all(
             color: selected ? Colors.white : c.withAlpha(120),

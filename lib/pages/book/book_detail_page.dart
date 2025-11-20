@@ -182,6 +182,15 @@ class BookDetailPage extends GetView<BookDetailController> {
             ),
           ),
         const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: controller.read,
+            icon: const Icon(Icons.menu_book),
+            label: const Text('开始阅读'),
+          ),
+        ),
+        const SizedBox(height: 24),
         _ratingSection(context),
         if (description != null && description.trim().isNotEmpty) ...[
           const SizedBox(height: 24),

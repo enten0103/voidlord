@@ -3,6 +3,7 @@ import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:dio/dio.dart' as dio; // alias dio
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:crypto/crypto.dart';
 
 import '../../apis/client.dart';
 import '../../apis/files_api.dart';
@@ -60,8 +61,20 @@ class UploadController extends GetxController {
       if (result != null && result.files.isNotEmpty) {
         final path = result.files.single.path;
         if (path != null) {
-          pendingFile.value = File(path);
+          final file = File(path);
+          pendingFile.value = file;
           SideBanner.info('已选择文件');
+
+          if (path.toLowerCase().endsWith('.epub')) {
+            try {
+              final stream = file.openRead();
+              final digest = await md5.bind(stream).first;
+              customKeyController.text = digest.toString();
+              SideBanner.info('已自动填充 MD5 为 key');
+            } catch (e) {
+              // ignore
+            }
+          }
         }
       }
     } catch (e) {

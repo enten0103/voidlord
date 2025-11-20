@@ -1,4 +1,13 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:voidlord/routes/app_routes.dart';
+import 'package:voidlord/services/config_service.dart';
+import 'package:voidlord/widgets/download_dialog.dart';
+import 'package:voidlord/widgets/parse_book_dialog.dart';
 import '../../apis/client.dart';
 import '../../apis/books_api.dart';
 import '../../models/book_models.dart';
@@ -116,6 +125,58 @@ class BookDetailController extends GetxController {
       SideBanner.danger('删除异常');
     } finally {
       deleting.value = false;
+    }
+  }
+
+  // 下载 → 解析并保存 → 导航阅读器
+  Future<void> read() async {
+    try {
+      final key = book.value!.tags.firstWhereOrNull(
+        (tag) => tag.key == "SOURCE",
+      );
+      if (key == null || key.value.isEmpty) {
+        SideBanner.danger('无法获取书籍下载地址');
+        return;
+      }
+
+      final hash = key.value;
+      final minioUrl = Get.find<ConfigService>().config.minioUrl;
+      final url = '$minioUrl/voidlord/${key.value}';
+      final tmpDir = await getTemporaryDirectory();
+      final savePath = p.join(tmpDir.path, '$hash.epub');
+      // 0. 若本地已存在解析结果则直接打开
+      final docDir = await getApplicationDocumentsDirectory();
+      final tonoJson = File(p.join(docDir.path, 'book', hash, 'tono.json'));
+      if (await tonoJson.exists()) {
+        await Get.toNamed(
+          Routes.readerPage,
+          parameters: {'id': hash, 'type': 'local'},
+        );
+        return;
+      }
+
+      // 1. 显示下载进度弹窗
+      final ok = await Get.dialog<bool>(
+        DownloadDialog(url: url, savePath: savePath),
+        barrierDismissible: false,
+        barrierColor: Colors.black45,
+      );
+      if (ok != true) {
+        throw Exception('下载失败');
+      }
+
+      await Get.dialog(
+        ParseBookDialog(filePath: savePath, returnTono: false),
+        barrierDismissible: false,
+        barrierColor: Colors.black45,
+      );
+
+      await Get.toNamed(
+        Routes.readerPage,
+        parameters: {'id': hash, 'type': 'local'},
+      );
+    } catch (e) {
+      Get.snackbar('读取失败', e.toString(), snackPosition: SnackPosition.BOTTOM);
     }
   }
 }

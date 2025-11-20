@@ -54,7 +54,8 @@ class TonoParser {
 
   // ============ 兼容旧 API（废弃）============
   @Deprecated(
-      'Use initFromDisk(filePath) and subscribe to parser.events instead')
+    'Use initFromDisk(filePath) and subscribe to parser.events instead',
+  )
   static Future<TonoParser> initFormDisk(
     String filePath,
     void Function(TonoParseEvent) onStateChange,
@@ -66,6 +67,7 @@ class TonoParser {
   }
 
   Future<String> parseInBackgroundAndSave() async {
+    print("object");
     final receive = ReceivePort();
     final token = RootIsolateToken.instance;
     final args = _IsolateArgs(
@@ -103,8 +105,9 @@ class TonoParser {
           receive.close();
           _runningIsolate = null;
         } else if (message['type'] == 'error') {
-          completer
-              .completeError(Exception(message['message'] ?? 'unknown error'));
+          completer.completeError(
+            Exception(message['message'] ?? 'unknown error'),
+          );
           sub.cancel();
           receive.close();
           _runningIsolate = null;
@@ -155,8 +158,9 @@ class TonoParser {
           receive.close();
           _runningIsolate = null;
         } else if (message['type'] == 'error') {
-          completer
-              .completeError(Exception(message['message'] ?? 'unknown error'));
+          completer.completeError(
+            Exception(message['message'] ?? 'unknown error'),
+          );
           await sub.cancel();
           receive.close();
           _runningIsolate = null;
@@ -172,8 +176,11 @@ class _IsolateArgs {
   final String? filePath;
   final SendPort sendPort;
   final RootIsolateToken? token;
-  const _IsolateArgs(
-      {required this.filePath, required this.sendPort, this.token});
+  const _IsolateArgs({
+    required this.filePath,
+    required this.sendPort,
+    this.token,
+  });
 }
 
 // 后台解析入口：创建本地 provider，实例化解析器，转发事件，保存 tono

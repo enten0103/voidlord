@@ -5,6 +5,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,14 +20,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ImageCacheSettingsService extends GetxService {
   static const _prefQualityKey = 'img_quality_percent';
   static const _prefMaxMemoryCacheKey = 'img_max_memory_cache_mb';
+  static const _cacheKey = 'voidlord_img_cache';
 
   final qualityPercent = 80.obs; // 10-100
   final maxMemoryCacheMb = 100.obs; // 默认 100MB 内存缓存
   final diskCacheMb = 0.0.obs;
   final measuring = false.obs;
 
+  late final CacheManager cacheManager;
+
   /// 初始化：读取偏好并计算当前缓存大小。
   Future<ImageCacheSettingsService> init() async {
+    cacheManager = CacheManager(
+      Config(
+        _cacheKey,
+        stalePeriod: const Duration(days: 30),
+        maxNrOfCacheObjects: 5000,
+        repo: JsonCacheInfoRepository(databaseName: _cacheKey),
+        fileService: HttpFileService(),
+      ),
+    );
+
     final prefs = await SharedPreferences.getInstance();
     qualityPercent.value =
         prefs.getInt(_prefQualityKey) ?? qualityPercent.value;
@@ -56,13 +70,13 @@ class ImageCacheSettingsService extends GetxService {
     _applyMemoryCacheLimit();
   }
 
-  /// 估算默认缓存目录大小。cached_network_image 使用 DefaultCacheManager。
+  /// 估算默认缓存目录大小。
   Future<void> refreshDiskCacheSize() async {
     if (measuring.value) return;
     measuring.value = true;
     try {
       final tempDir = await getTemporaryDirectory();
-      final cacheDir = Directory('${tempDir.path}/libCachedImageData');
+      final cacheDir = Directory(p.join(tempDir.path, _cacheKey));
       if (!cacheDir.existsSync()) {
         diskCacheMb.value = 0;
       } else {
@@ -90,7 +104,7 @@ class ImageCacheSettingsService extends GetxService {
 
   /// 清空全部磁盘缓存。
   Future<void> clearDiskCache() async {
-    await DefaultCacheManager().emptyCache();
+    await cacheManager.emptyCache();
     await refreshDiskCacheSize();
   }
 }

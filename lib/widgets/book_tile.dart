@@ -110,6 +110,7 @@ class BookTile extends StatelessWidget {
         imageUrl: src,
         fit: BoxFit.cover,
         memCacheWidth: targetWidth,
+        cacheManager: svc.cacheManager,
         errorWidget: (_, __, ___) => Container(color: Colors.grey.shade300),
       );
     });

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../pages/upload/upload_controller.dart';
+import 'package:voidlord/pages/upload/upload_controller.dart';
 
 class UploadBinding extends Bindings {
   @override

@@ -15,7 +15,6 @@ class AuthService extends GetxService {
   String? get token => _token;
 
   Future<AuthService> init() async {
-    if (Get.testMode) return this; // 测试环境不访问本地存储
     final sp = await SharedPreferences.getInstance();
     final t = sp.getString(_kTokenKey);
     if (t != null && t.isNotEmpty) {
@@ -23,24 +22,12 @@ class AuthService extends GetxService {
       Get.find<Api>().setBearerToken(_token);
       loggedIn.value = true;
       // 恢复登录后立即尝试加载权限
-      if (Get.isRegistered<PermissionService>()) {
-        await Get.find<PermissionService>().load();
-      }
+      await Get.find<PermissionService>().load();
     }
     return this;
   }
 
   Future<bool> login(String username, String password) async {
-    lastError.value = null;
-    if (Get.testMode) {
-      if (username.isNotEmpty && password.isNotEmpty) {
-        loggedIn.value = true;
-        return true;
-      }
-      lastError.value = '用户名或密码错误';
-      return false;
-    }
-
     try {
       final LoginResponse data = await Get.find<Api>().login(
         username: username,

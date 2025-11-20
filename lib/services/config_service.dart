@@ -4,7 +4,7 @@ import 'package:voidlord/config/app_config_release.dart';
 import '../config/app_config.dart';
 
 class ConfigService extends GetxService {
-  late final AppConfig config = bool.fromEnvironment('dart.vm.product')
+  late final AppConfig config = const bool.fromEnvironment('dart.vm.product')
       ? ReleaseConfig
       : DevConfig;
 

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../pages/profile/profile_edit_controller.dart';
+import 'package:voidlord/pages/profile/profile_edit_controller.dart';
 
 class ProfileEditBinding extends Bindings {
   @override

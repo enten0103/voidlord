@@ -16,8 +16,8 @@ Future<void> bootstrap() async {
 }
 
 Future<void> initWindowsWindowSetup() async {
-  if ((GetPlatform.isWindows || GetPlatform.isLinux || GetPlatform.isMacOS) &&
-      !Get.testMode) {
+  if (((GetPlatform.isWindows || GetPlatform.isLinux || GetPlatform.isMacOS) &&
+      !GetPlatform.isWeb)) {
     await windowManager.ensureInitialized();
     const initialSize = Size(1080, 720);
     const minSize = Size(400, 400);
@@ -40,6 +40,9 @@ Future initDependencies() async {
 
   final apiClient = Api();
   Get.put<Api>(apiClient, permanent: true);
+
+  Get.put<PermissionService>(PermissionService(), permanent: true);
+
   final auth = AuthService();
   await auth.init();
   Get.put<AuthService>(auth, permanent: true);
@@ -57,11 +60,4 @@ Future initDependencies() async {
   final imgCacheService = ImageCacheSettingsService();
   await imgCacheService.init();
   Get.put<ImageCacheSettingsService>(imgCacheService, permanent: true);
-
-  final permService = PermissionService();
-  // 登录态如果已恢复则尝试加载权限
-  if (auth.loggedIn.value) {
-    await permService.load();
-  }
-  Get.put<PermissionService>(permService, permanent: true);
 }

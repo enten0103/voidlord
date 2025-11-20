@@ -24,7 +24,7 @@ class AppTitleBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     // 测试环境或非 Windows 时回退到标准 AppBar，避免插件在测试中加载原生库
-    if (GetPlatform.isWindows && !Get.testMode) {
+    if (GetPlatform.isWindows && !GetPlatform.isWeb) {
       return SizedBox(
         height: height,
         child: Material(

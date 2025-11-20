@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../pages/settings/settings_controller.dart';
+import 'package:voidlord/pages/settings/settings_controller.dart';
 
 class SettingsBinding extends Bindings {
   @override

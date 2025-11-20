@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/pages/profile/profile_view.dart';
 import 'package:voidlord/services/permission_service.dart';
-import 'upload/upload_list_page.dart';
-import 'square/square_page.dart';
-import 'recommendations/recommendations_page.dart';
-import 'search/book_search_page.dart';
-import 'permissions/permissions_page.dart';
-import 'media_libraries/media_libraries_page.dart';
+import '../upload/upload_list_page.dart';
+import '../square/square_page.dart';
+import '../recommendations/recommendations_page.dart';
+import '../search/book_search_page.dart';
+import '../permissions/permissions_page.dart';
+import '../media_libraries/media_libraries_page.dart';
 import 'package:voidlord/widgets/responsive_scaffold.dart';
-import 'package:voidlord/controllers/root_controller.dart';
+import 'package:voidlord/pages/root/root_controller.dart';
 
 class RootPage extends GetView<RootController> {
   const RootPage({super.key});
@@ -46,7 +46,7 @@ class RootPage extends GetView<RootController> {
 
       return ResponsiveScaffold(
         title: titles[i],
-        actions: const [],
+        actions: [],
         pages: pages,
         items: [
           const NavItem(
@@ -90,5 +90,3 @@ class RootPage extends GetView<RootController> {
     });
   }
 }
-
-// 搜索页已正式替换 _SearchTab 使用 BookSearchPage

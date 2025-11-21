@@ -11,7 +11,12 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: DraggableAppBar(
-        title: Obx(() => Text(controller.library.value?.name ?? '媒体库')),
+        title: Obx(() {
+          if (controller.isSearchMode.value) {
+            return const Text('搜索结果');
+          }
+          return Text(controller.library.value?.name ?? '媒体库');
+        }),
       ),
       body: Obx(() {
         if (controller.loading.value) {

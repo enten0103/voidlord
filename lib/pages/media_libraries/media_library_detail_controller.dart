@@ -12,6 +12,11 @@ class MediaLibraryDetailController extends GetxController {
   final others = <MediaLibraryItemDto>[].obs; // 子库等
   int? libraryId;
   final library = Rxn<MediaLibraryDto>(); // 改为响应式，便于标题更新
+
+  // 搜索模式状态
+  final isSearchMode = false.obs;
+  final searchConditions = <BookSearchCondition>[];
+
   // 分页状态
   final limit = 20.obs;
   final offset = 0.obs;
@@ -35,6 +40,14 @@ class MediaLibraryDetailController extends GetxController {
         _loadVirtualMyUploaded();
         return; // 虚拟库直接返回
       }
+      if (args['searchConditions'] != null) {
+        isSearchMode.value = true;
+        searchConditions.addAll(
+          (args['searchConditions'] as List).cast<BookSearchCondition>(),
+        );
+        load(0); // 搜索模式下 ID 无意义，传 0
+        return;
+      }
       if (args['id'] is int) {
         libraryId = args['id'] as int;
       }
@@ -55,10 +68,20 @@ class MediaLibraryDetailController extends GetxController {
     offset.value = 0;
     noMore.value = false;
     try {
-      final lib = await api.getLibrary(id, limit: limit.value, offset: 0);
-      library.value = lib;
-      await _appendItems(lib.items);
-      _updateNoMore();
+      if (isSearchMode.value) {
+        final resp = await api.searchBooks(
+          conditions: searchConditions,
+          limit: limit.value,
+          offset: 0,
+        );
+        _appendBookDtos(resp.items);
+        _updateNoMore(total: resp.total);
+      } else {
+        final lib = await api.getLibrary(id, limit: limit.value, offset: 0);
+        library.value = lib;
+        await _appendItems(lib.items);
+        _updateNoMore();
+      }
     } catch (e) {
       error.value = '加载失败';
     } finally {
@@ -67,23 +90,50 @@ class MediaLibraryDetailController extends GetxController {
   }
 
   Future<void> loadMore() async {
-    if (loadingMore.value || noMore.value || libraryId == null) return;
+    if (loadingMore.value || noMore.value) return;
+    if (!isSearchMode.value && libraryId == null) return;
     loadingMore.value = true;
     try {
       final nextOffset = books.length + others.length; // 仅书籍影响分页，此处简化
-      final lib = await api.getLibrary(
-        libraryId!,
-        limit: limit.value,
-        offset: nextOffset,
-      );
-      await _appendItems(lib.items);
+      if (isSearchMode.value) {
+        final resp = await api.searchBooks(
+          conditions: searchConditions,
+          limit: limit.value,
+          offset: nextOffset,
+        );
+        _appendBookDtos(resp.items);
+        _updateNoMore(total: resp.total);
+      } else {
+        final lib = await api.getLibrary(
+          libraryId!,
+          limit: limit.value,
+          offset: nextOffset,
+        );
+        await _appendItems(lib.items);
+        _updateNoMore(total: lib.itemsCount);
+      }
       offset.value = nextOffset;
-      _updateNoMore(total: lib.itemsCount);
     } catch (_) {
       // 忽略加载更多失败
     } finally {
       loadingMore.value = false;
     }
+  }
+
+  void _appendBookDtos(List<BookDto> items) {
+    final built = <BookTileData>[];
+    for (final b in items) {
+      final tagsMap = {for (final t in b.tags) t.key.toUpperCase(): t.value};
+      built.add(
+        BookTileData(
+          id: b.id,
+          cover: tagsMap['COVER'],
+          title: tagsMap['TITLE'] ?? '未命名',
+          author: tagsMap['AUTHOR'] ?? '-',
+        ),
+      );
+    }
+    books.addAll(built);
   }
 
   Future<void> _appendItems(List<MediaLibraryItemDto> items) async {

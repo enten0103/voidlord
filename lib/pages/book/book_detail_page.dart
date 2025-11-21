@@ -7,6 +7,8 @@ import 'book_detail_controller.dart';
 import '../../services/media_libraries_service.dart';
 import '../../widgets/side_baner.dart';
 import '../../widgets/draggable_app_bar.dart';
+import '../../apis/books_api.dart';
+import '../../routes/app_routes.dart';
 
 class BookDetailPage extends GetView<BookDetailController> {
   const BookDetailPage({super.key});
@@ -183,22 +185,56 @@ class BookDetailPage extends GetView<BookDetailController> {
         if (series != null || volume != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              [
-                if (series != null) '$series系列',
-                if (volume != null) '#$volume',
-              ].join(' '),
-              style: Theme.of(context).textTheme.titleMedium,
+            child: InkWell(
+              onTap: series == null
+                  ? null
+                  : () => Get.toNamed(
+                      Routes.mediaLibraryDetail,
+                      arguments: {
+                        'searchConditions': [
+                          BookSearchCondition(
+                            target: 'SERIES',
+                            op: 'match',
+                            value: series,
+                          ),
+                        ],
+                      },
+                    ),
+              child: Text(
+                [
+                  if (series != null) '$series系列',
+                  if (volume != null) '#$volume',
+                ].join(' '),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: series != null
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+              ),
             ),
           ),
         if (author != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              author,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(color: Colors.black54),
+            child: InkWell(
+              onTap: () => Get.toNamed(
+                Routes.mediaLibraryDetail,
+                arguments: {
+                  'searchConditions': [
+                    BookSearchCondition(
+                      target: 'AUTHOR',
+                      op: 'match',
+                      value: author,
+                    ),
+                  ],
+                },
+              ),
+              child: Text(
+                author,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
             ),
           ),
         const SizedBox(height: 24),

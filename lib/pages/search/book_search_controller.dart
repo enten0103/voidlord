@@ -40,6 +40,7 @@ class BookSearchController extends GetxController {
     if (index < 0 || index >= conditions.length) return;
     final old = conditions[index];
     conditions[index] = BookSearchCondition(
+      id: old.id,
       target: target ?? old.target,
       op: op ?? old.op,
       value: value ?? old.value,
@@ -118,7 +119,14 @@ class BookSearchController extends GetxController {
       final keyUp = key.toUpperCase();
       final List<BookSearchCondition> list = q.isEmpty
           ? []
-          : [BookSearchCondition(target: keyUp, op: 'match', value: q)];
+          : [
+              BookSearchCondition(
+                id: 'simple_search',
+                target: keyUp,
+                op: 'match',
+                value: q,
+              ),
+            ];
       final resp = await api.searchBooks(
         conditions: list,
         limit: limit.value,

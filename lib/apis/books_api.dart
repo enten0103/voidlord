@@ -330,14 +330,17 @@ extension BooksApi on Api {
 
 // 搜索条件模型
 class BookSearchCondition {
+  final String id;
   final String target; // tag key
   final String op; // eq | neq | match
   final String value;
   BookSearchCondition({
+    String? id,
     required this.target,
     required this.op,
     required this.value,
-  });
+  }) : id = id ?? DateTime.now().microsecondsSinceEpoch.toString();
+
   Map<String, dynamic> toJson() => {
     // 后端采用大写枚举风格 (e.g. TITLE / AUTHOR / COVER)，统一向上层发送大写
     'target': target.toUpperCase(),

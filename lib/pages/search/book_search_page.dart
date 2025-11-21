@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 // book_models.dart 未直接引用具体类型（仅通过 BookSearchController.results 访问），无需导入
 import '../../widgets/side_baner.dart';
 import '../../routes/app_routes.dart';
-import '../../widgets/adaptive_book_grid.dart';
 import 'book_search_controller.dart';
 import '../../apis/books_api.dart';
 
@@ -30,8 +29,6 @@ class BookSearchPage extends GetView<BookSearchController> {
                     ? _advancedPanelReactive(context)
                     : const SizedBox(),
               ),
-              const SizedBox(height: 20),
-              _resultsSectionReactive(context, constraints.maxWidth),
             ],
           ),
         ),
@@ -74,7 +71,12 @@ class BookSearchPage extends GetView<BookSearchController> {
           return Column(
             children: List.generate(
               controller.conditions.length,
-              (i) => _conditionRow(context, i, controller.conditions[i]),
+              (i) => _ConditionInputRow(
+                key: Key(controller.conditions[i].id),
+                index: i,
+                condition: controller.conditions[i],
+                controller: controller,
+              ),
             ),
           );
         }),
@@ -84,14 +86,19 @@ class BookSearchPage extends GetView<BookSearchController> {
           () => Row(
             children: [
               FilledButton.icon(
-                onPressed: controller.searching.value
+                onPressed: controller.loading.value
                     ? null
-                    : () async {
-                        await controller.search(reset: true);
-                        if (controller.results.isEmpty &&
-                            controller.error.value == null) {
-                          SideBanner.warning('无匹配结果');
+                    : () {
+                        if (controller.conditions.isEmpty) {
+                          SideBanner.warning('请添加搜索条件');
+                          return;
                         }
+                        Get.toNamed(
+                          Routes.mediaLibraryDetail,
+                          arguments: {
+                            'searchConditions': controller.conditions.toList(),
+                          },
+                        );
                       },
                 icon: const Icon(Icons.tune),
                 label: const Text('按条件搜索'),
@@ -182,117 +189,6 @@ class BookSearchPage extends GetView<BookSearchController> {
     );
   }
 
-  Widget _conditionRow(BuildContext context, int index, BookSearchCondition c) {
-    final ops = ['eq', 'neq', 'match'];
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 120,
-              child: TextField(
-                decoration: const InputDecoration(labelText: '标签 Key'),
-                controller: TextEditingController(text: c.target)
-                  ..selection = TextSelection.fromPosition(
-                    TextPosition(offset: c.target.length),
-                  ),
-                onChanged: (v) =>
-                    controller.updateCondition(index, target: v.trim()),
-              ),
-            ),
-            const SizedBox(width: 12),
-            DropdownButton<String>(
-              value: c.op,
-              items: ops
-                  .map(
-                    (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
-                  )
-                  .toList(),
-              onChanged: (v) {
-                if (v != null) controller.updateCondition(index, op: v);
-              },
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(labelText: '值'),
-                controller: TextEditingController(text: c.value)
-                  ..selection = TextSelection.fromPosition(
-                    TextPosition(offset: c.value.length),
-                  ),
-                onChanged: (v) => controller.updateCondition(index, value: v),
-              ),
-            ),
-            const SizedBox(width: 12),
-            IconButton(
-              tooltip: '删除',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () => controller.removeCondition(index),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _resultsGrid(BuildContext context, double maxWidth) {
-    if (controller.results.isEmpty) {
-      if (controller.loading.value) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      return const SizedBox();
-    }
-    return AdaptiveBookGrid(
-      books: controller.results,
-      onTap: (b) => Get.toNamed(Routes.bookDetail, arguments: b.id),
-    );
-  }
-
-  /// 结果展示 + 分页/错误 提供局部响应式
-  Widget _resultsSectionReactive(BuildContext context, double maxWidth) {
-    return Obx(() {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _resultsGrid(context, maxWidth),
-          const SizedBox(height: 12),
-          if (controller.hasMore.value)
-            Center(
-              child: FilledButton(
-                onPressed: controller.loading.value
-                    ? null
-                    : () => controller.loadMore(),
-                child: const Text('加载更多'),
-              ),
-            ),
-          if (!controller.loading.value &&
-              controller.results.isNotEmpty &&
-              !controller.hasMore.value &&
-              controller.total.value != null)
-            Center(
-              child: Text(
-                '已全部加载 (${controller.results.length}/${controller.total.value})',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          if (controller.error.value != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: Text(
-                controller.error.value!,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-        ],
-      );
-    });
-  }
-
-  // _computeColumns 已被自适应网格组件内置，保留占位如后续需要不同策略可再添加。
-
-  /// 候选列表使用独立 Obx 确保即时刷新
   Widget _suggestionsReactive(BuildContext context) {
     return Obx(() {
       final q = controller.simpleQuery.value.trim();
@@ -326,21 +222,23 @@ class BookSearchPage extends GetView<BookSearchController> {
             InkWell(
               onTap: controller.loading.value
                   ? null
-                  : () async {
+                  : () {
                       controller.selectedSimpleKey.value = c.key;
-                      // 回显候选内容到输入框并隐藏候选
-                      controller.simpleQuery.value =
-                          c.display; // 将展示文本写入（同步到 controller via ever）
+                      controller.simpleQuery.value = c.display;
                       controller.simpleSuggestionsVisible.value = false;
-                      await controller.searchMatchKey(
-                        c.key,
-                        reset: true,
-                        valueOverride: q,
+
+                      final keyUp = c.key.toUpperCase();
+                      final list = [
+                        BookSearchCondition(
+                          target: keyUp,
+                          op: 'match',
+                          value: q,
+                        ),
+                      ];
+                      Get.toNamed(
+                        Routes.mediaLibraryDetail,
+                        arguments: {'searchConditions': list},
                       );
-                      if (controller.results.isEmpty &&
-                          controller.error.value == null) {
-                        SideBanner.info('未找到匹配结果');
-                      }
                     },
               child: Container(
                 width: double.infinity,
@@ -386,6 +284,107 @@ class BookSearchPage extends GetView<BookSearchController> {
         ],
       );
     });
+  }
+}
+
+class _ConditionInputRow extends StatefulWidget {
+  final int index;
+  final BookSearchCondition condition;
+  final BookSearchController controller;
+
+  const _ConditionInputRow({
+    super.key,
+    required this.index,
+    required this.condition,
+    required this.controller,
+  });
+
+  @override
+  State<_ConditionInputRow> createState() => _ConditionInputRowState();
+}
+
+class _ConditionInputRowState extends State<_ConditionInputRow> {
+  late final TextEditingController _targetController;
+  late final TextEditingController _valueController;
+
+  @override
+  void initState() {
+    super.initState();
+    _targetController = TextEditingController(text: widget.condition.target);
+    _valueController = TextEditingController(text: widget.condition.value);
+  }
+
+  @override
+  void dispose() {
+    _targetController.dispose();
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(_ConditionInputRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.condition.target != _targetController.text) {
+      _targetController.text = widget.condition.target;
+    }
+    if (widget.condition.value != _valueController.text) {
+      _valueController.text = widget.condition.value;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ops = ['eq', 'neq', 'match'];
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 120,
+              child: TextField(
+                controller: _targetController,
+                decoration: const InputDecoration(labelText: '标签 Key'),
+                onChanged: (v) => widget.controller.updateCondition(
+                  widget.index,
+                  target: v.trim(),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            DropdownButton<String>(
+              value: widget.condition.op,
+              items: ops
+                  .map(
+                    (e) => DropdownMenuItem<String>(value: e, child: Text(e)),
+                  )
+                  .toList(),
+              onChanged: (v) {
+                if (v != null) {
+                  widget.controller.updateCondition(widget.index, op: v);
+                }
+              },
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: _valueController,
+                decoration: const InputDecoration(labelText: '值'),
+                onChanged: (v) =>
+                    widget.controller.updateCondition(widget.index, value: v),
+              ),
+            ),
+            const SizedBox(width: 12),
+            IconButton(
+              tooltip: '删除',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: () => widget.controller.removeCondition(widget.index),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

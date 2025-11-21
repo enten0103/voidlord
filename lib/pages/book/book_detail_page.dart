@@ -45,9 +45,18 @@ class BookDetailPage extends GetView<BookDetailController> {
       final title = tagsMapAll['TITLE'] ?? '未命名';
       final author = tagsMapAll['AUTHOR'];
       final description = tagsMapAll['DESCRIPTION'];
+      final series = tagsMapAll['SERIES'];
+      final volume = tagsMapAll['VOLUME'];
 
       // 分组：仅对 shown==true 且非特殊标签进行分组展示
-      final specialKeys = {'COVER', 'TITLE', 'AUTHOR', 'DESCRIPTION'};
+      final specialKeys = {
+        'COVER',
+        'TITLE',
+        'AUTHOR',
+        'DESCRIPTION',
+        'SERIES',
+        'VOLUME',
+      };
       final grouped = <String, List<String>>{};
       for (final t in allTags) {
         if (!t.shown) continue; // 不显示的标签不进入分组区域
@@ -120,6 +129,8 @@ class BookDetailPage extends GetView<BookDetailController> {
               cover,
               title,
               author,
+              series,
+              volume,
               description,
               grouped,
               wide,
@@ -157,6 +168,8 @@ class BookDetailPage extends GetView<BookDetailController> {
     String? cover,
     String title,
     String? author,
+    String? series,
+    String? volume,
     String? description,
     Map<String, List<String>> grouped,
     bool wide,
@@ -167,6 +180,17 @@ class BookDetailPage extends GetView<BookDetailController> {
         if (!wide) _coverBox(context, cover),
         if (!wide) const SizedBox(height: 16),
         Text(title, style: Theme.of(context).textTheme.titleLarge),
+        if (series != null || volume != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              [
+                if (series != null) '$series系列',
+                if (volume != null) '#$volume',
+              ].join(' '),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
         if (author != null)
           Padding(
             padding: const EdgeInsets.only(top: 4),

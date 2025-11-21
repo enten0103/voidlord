@@ -32,15 +32,13 @@ class TonoOuterWidget extends StatelessWidget {
   /// 根元素
   final TonoContainer root;
 
-  TonoOuterWidget({
-    super.key,
-    required this.root,
-  }) : assert(
-          root.className == "html" &&
-              root.children.length == 1 &&
-              root.children[0].className == "body",
-          "根元素dom结构应为 html-> body->...",
-        );
+  TonoOuterWidget({super.key, required this.root})
+    : assert(
+        root.className == "html" &&
+            root.children.length == 1 &&
+            root.children[0].className == "body",
+        "根元素dom结构应为 html-> body->...",
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -54,74 +52,85 @@ class TonoOuterWidget extends StatelessWidget {
       progressor.currentElementIndex.value = positions.first.index;
     });
     return TonoInlineStateProvider(
-        state: InlineState(),
-        child: TonoLayoutProvider(
-            type: TonoLayoutType.fix,
-            child: TonoSingleElementWidget(
-                element: root,
-                child: TonoSingleElementWidget(
-                    element: root.children[0] as TonoContainer,
-                    child: ClipRect(
-                        clipper: VerticalClipper(),
-                        child: ScrollablePositionedList.separated(
-                            padding: EdgeInsets.only(
-                              left: config.viewPortConfig.left,
-                              right: config.viewPortConfig.right,
-                            ),
-                            itemScrollController:
-                                controller.itemScrollController,
-                            itemPositionsListener:
-                                controller.itemPositionsListener,
-                            minCacheExtent: 100,
-                            itemCount: progressor.totalElementCount,
-                            separatorBuilder: (context, index) {
-                              var histroyIndex = userData.histroy.toIndex();
-                              if (provider.isLast(index)) {
-                                if (histroyIndex != 0 &&
-                                    histroyIndex == index) {
-                                  return SizedBox(
-                                      height: Get.mediaQuery.size.height / 3,
-                                      child: TitleDivline(title: "上次看到"));
-                                }
-                                return SizedBox(
-                                  height: Get.mediaQuery.size.height / 3,
-                                );
-                              } else {
-                                if (histroyIndex != 0 &&
-                                    histroyIndex == index) {
-                                  return TitleDivline(title: "上次看到");
-                                }
-                                return Container();
-                              }
-                            },
-                            itemBuilder: (ctx, index) {
-                              var location = index.toLocation();
-                              var isMarked = userData.isMarked(location).obs;
-                              return TonoInteractionProvider(
-                                  markded: isMarked,
-                                  child: TonoLocationProvider(
-                                      location: location,
-                                      child: GestureDetector(
-                                          onLongPress: () {
-                                            Get.dialog(OpDialogView(
-                                              index: index,
-                                              location: location,
-                                              isMarked: isMarked,
-                                            ));
-                                          },
-                                          child: Stack(
-                                              clipBehavior: Clip.none,
-                                              children: [
-                                                TonoContainerWidget(
-                                                    key: ValueKey(index),
-                                                    tonoContainer: provider
-                                                            .getWidgetByElementCount(
-                                                                index)
-                                                        as TonoContainer),
-                                                Obx(() => Marker(
-                                                    isMarked: isMarked.value))
-                                              ]))));
-                            }))))));
+      state: InlineState(),
+      child: TonoLayoutProvider(
+        type: TonoLayoutType.fix,
+        child: TonoSingleElementWidget(
+          element: root,
+          child: TonoSingleElementWidget(
+            element: root.children[0] as TonoContainer,
+            child: ClipRect(
+              clipper: VerticalClipper(),
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(
+                  context,
+                ).copyWith(scrollbars: false),
+                child: ScrollablePositionedList.separated(
+                  padding: EdgeInsets.only(
+                    left: config.viewPortConfig.left,
+                    right: config.viewPortConfig.right,
+                  ),
+                  itemScrollController: controller.itemScrollController,
+                  itemPositionsListener: controller.itemPositionsListener,
+                  minCacheExtent: Get.height / 2,
+                  itemCount: progressor.totalElementCount,
+                  separatorBuilder: (context, index) {
+                    var histroyIndex = userData.histroy.toIndex();
+                    if (provider.isLast(index)) {
+                      if (histroyIndex != 0 && histroyIndex == index) {
+                        return SizedBox(
+                          height: Get.mediaQuery.size.height / 3,
+                          child: TitleDivline(title: "上次看到"),
+                        );
+                      }
+                      return SizedBox(height: Get.mediaQuery.size.height / 3);
+                    } else {
+                      if (histroyIndex != 0 && histroyIndex == index) {
+                        return TitleDivline(title: "上次看到");
+                      }
+                      return Container();
+                    }
+                  },
+                  itemBuilder: (ctx, index) {
+                    var location = index.toLocation();
+                    var isMarked = userData.isMarked(location).obs;
+                    return TonoInteractionProvider(
+                      markded: isMarked,
+                      child: TonoLocationProvider(
+                        location: location,
+                        child: GestureDetector(
+                          onLongPress: () {
+                            Get.dialog(
+                              OpDialogView(
+                                index: index,
+                                location: location,
+                                isMarked: isMarked,
+                              ),
+                            );
+                          },
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              TonoContainerWidget(
+                                key: ValueKey(index),
+                                tonoContainer:
+                                    provider.getWidgetByElementCount(index)
+                                        as TonoContainer,
+                              ),
+                              Obx(() => Marker(isMarked: isMarked.value)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Size genContainerSize() {
@@ -129,16 +138,17 @@ class TonoOuterWidget extends StatelessWidget {
     var padding = Get.mediaQuery.padding;
     var screenSize = Get.mediaQuery.size;
     return Size(
-        screenSize.width -
-            padding.left -
-            padding.right -
-            config.viewPortConfig.left -
-            config.viewPortConfig.right,
-        screenSize.height -
-            padding.top -
-            padding.bottom -
-            config.viewPortConfig.top -
-            config.viewPortConfig.bottom);
+      screenSize.width -
+          padding.left -
+          padding.right -
+          config.viewPortConfig.left -
+          config.viewPortConfig.right,
+      screenSize.height -
+          padding.top -
+          padding.bottom -
+          config.viewPortConfig.top -
+          config.viewPortConfig.bottom,
+    );
   }
 }
 
@@ -177,14 +187,15 @@ Size genContainerSize() {
   var padding = Get.mediaQuery.padding;
   var screenSize = Get.mediaQuery.size;
   return Size(
-      screenSize.width -
-          padding.left -
-          padding.right -
-          config.viewPortConfig.left -
-          config.viewPortConfig.right,
-      screenSize.height -
-          padding.top -
-          padding.bottom -
-          config.viewPortConfig.top -
-          config.viewPortConfig.bottom);
+    screenSize.width -
+        padding.left -
+        padding.right -
+        config.viewPortConfig.left -
+        config.viewPortConfig.right,
+    screenSize.height -
+        padding.top -
+        padding.bottom -
+        config.viewPortConfig.top -
+        config.viewPortConfig.bottom,
+  );
 }

@@ -16,10 +16,7 @@ import 'package:voidlord/tono_reader/tool/after_layout.dart';
 /// - max-height
 /// - padding
 class TonoCssSizePaddingWidget extends TonoCssWidget {
-  TonoCssSizePaddingWidget({
-    super.key,
-    required this.child,
-  });
+  TonoCssSizePaddingWidget({super.key, required this.child});
   final Widget child;
   @override
   Widget content(BuildContext context) {
@@ -56,62 +53,44 @@ class TonoCssSizePaddingWidget extends TonoCssWidget {
     }
 
     var container = AfterLayout(
-        callback: (values) {
-          if (context.psize.value.height == null &&
-              context.psize.value.width == null) {
-            context.psize.value = values.size.toPredictSize();
-          }
-        },
-        child: Container(
-          padding: padding,
-          height: heightValue,
-          width: widthValue,
-          decoration: boxDecoration,
-          constraints: BoxConstraints(
-            maxHeight: maxHeightValue ?? double.infinity,
-            maxWidth: maxWidthValue ?? double.infinity,
-          ),
-          child: child,
-        ));
+      callback: (values) {
+        if (!context.mounted) return;
+        if (context.psize.value.height == null &&
+            context.psize.value.width == null) {
+          context.psize.value = values.size.toPredictSize();
+        }
+      },
+      child: Container(
+        padding: padding,
+        height: heightValue,
+        width: widthValue,
+        decoration: boxDecoration,
+        constraints: BoxConstraints(
+          maxHeight: maxHeightValue ?? double.infinity,
+          maxWidth: maxWidthValue ?? double.infinity,
+        ),
+        child: child,
+      ),
+    );
     if (width is KeyWordCssWidth? &&
         (width as KeyWordCssWidth?)?.keyWord == CssWidthKeyWords.fitContent) {
-      return TonoLayoutProvider(
-        type: TonoLayoutType.shrink,
-        child: container,
-      );
+      return TonoLayoutProvider(type: TonoLayoutType.shrink, child: container);
     }
     if (width is ValuedCssWidth) {
-      return TonoLayoutProvider(
-        type: TonoLayoutType.fix,
-        child: container,
-      );
+      return TonoLayoutProvider(type: TonoLayoutType.fix, child: container);
     }
     return container;
   }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    properties.add(
-      DiagnosticsProperty<CssWidth>("width", width),
-    );
-    properties.add(
-      DiagnosticsProperty<CssHeight>("height", height),
-    );
-    properties.add(
-      DiagnosticsProperty<CssWidth>("max-width", maxWidth),
-    );
-    properties.add(
-      DiagnosticsProperty<CssHeight>("max-height", maxHeight),
-    );
-    properties.add(
-      DiagnosticsProperty<EdgeInsets>("padding", padding),
-    );
-    properties.add(
-      DiagnosticsProperty<CssDisplay>("display", display),
-    );
-    properties.add(
-      DiagnosticsProperty<String>("pdisplay", pDisplay),
-    );
+    properties.add(DiagnosticsProperty<CssWidth>("width", width));
+    properties.add(DiagnosticsProperty<CssHeight>("height", height));
+    properties.add(DiagnosticsProperty<CssWidth>("max-width", maxWidth));
+    properties.add(DiagnosticsProperty<CssHeight>("max-height", maxHeight));
+    properties.add(DiagnosticsProperty<EdgeInsets>("padding", padding));
+    properties.add(DiagnosticsProperty<CssDisplay>("display", display));
+    properties.add(DiagnosticsProperty<String>("pdisplay", pDisplay));
     super.debugFillProperties(properties);
   }
 }

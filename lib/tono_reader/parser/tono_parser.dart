@@ -67,7 +67,6 @@ class TonoParser {
   }
 
   Future<String> parseInBackgroundAndSave() async {
-    print("object");
     final receive = ReceivePort();
     final token = RootIsolateToken.instance;
     final args = _IsolateArgs(

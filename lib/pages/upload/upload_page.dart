@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../widgets/side_baner.dart';
 import '../../models/file_models.dart';
 import 'upload_controller.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 /// 图书上传页面：媒体文件上传与标签创建分离。
 /// 宽屏 (>=1000)：左右两列；窄屏：Tab 切换。
@@ -16,7 +17,7 @@ class UploadPage extends GetView<UploadController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
+      appBar: DraggableAppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),

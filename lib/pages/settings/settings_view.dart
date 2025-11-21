@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 import 'package:get/get.dart';
 import 'settings_controller.dart';
 import 'widgets/appearance_section.dart';
 import 'widgets/image_cache_section.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
@@ -13,13 +11,7 @@ class SettingsView extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: DragToMoveArea(child: const Text('设置', style: TextStyle())),
-        flexibleSpace:
-            Platform.isWindows || Platform.isLinux || Platform.isMacOS
-            ? DragToMoveArea(child: Container(color: Colors.transparent))
-            : null,
-      ),
+      appBar: DraggableAppBar(title: const Text('设置', style: TextStyle())),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:voidlord/services/config_service.dart';
 import 'package:voidlord/services/image_cache_settings_service.dart';
-import 'package:window_manager/window_manager.dart';
 import 'book_detail_controller.dart';
 import '../../services/media_libraries_service.dart';
 import '../../widgets/side_baner.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 class BookDetailPage extends GetView<BookDetailController> {
   const BookDetailPage({super.key});
@@ -19,10 +19,7 @@ class BookDetailPage extends GetView<BookDetailController> {
       }
       if (controller.error.value != null) {
         return Scaffold(
-          appBar: AppBar(
-            title: DragToMoveArea(child: const Text('图书详情')),
-            flexibleSpace: DragToMoveArea(child: SizedBox.expand()),
-          ),
+          appBar: DraggableAppBar(title: const Text('图书详情')),
           body: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -60,9 +57,8 @@ class BookDetailPage extends GetView<BookDetailController> {
       }
 
       return Scaffold(
-        appBar: AppBar(
-          title: DragToMoveArea(child: Text(title)),
-          flexibleSpace: DragToMoveArea(child: SizedBox.expand()),
+        appBar: DraggableAppBar(
+          title: Text(title),
           actions: [
             IconButton(
               tooltip: '收藏到媒体库',

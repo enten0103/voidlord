@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:window_manager/window_manager.dart';
 import 'media_library_detail_controller.dart';
 import '../../widgets/book_tile.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
   const MediaLibraryDetailPage({super.key});
@@ -12,16 +10,8 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Obx(
-          () => DragToMoveArea(
-            child: Text(controller.library.value?.name ?? '媒体库'),
-          ),
-        ),
-        flexibleSpace:
-            Platform.isWindows || Platform.isLinux || Platform.isMacOS
-            ? DragToMoveArea(child: Container(color: Colors.transparent))
-            : null,
+      appBar: DraggableAppBar(
+        title: Obx(() => Text(controller.library.value?.name ?? '媒体库')),
       ),
       body: Obx(() {
         if (controller.loading.value) {

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'media_libraries_controller.dart';
 import '../../models/media_library_models.dart';
 import '../../routes/app_routes.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   const MediaLibrariesPage({super.key});
@@ -10,7 +11,7 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: DraggableAppBar(
         title: const Text('媒体库'),
         actions: [
           // 刷新按钮

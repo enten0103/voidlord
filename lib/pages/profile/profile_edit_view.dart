@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'profile_edit_controller.dart';
-import 'package:window_manager/window_manager.dart';
 import 'package:get/get.dart';
+import '../../widgets/draggable_app_bar.dart';
 
 class ProfileEditView extends GetView<ProfileEditController> {
   const ProfileEditView({super.key});
@@ -11,13 +9,7 @@ class ProfileEditView extends GetView<ProfileEditController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('编辑资料'),
-        flexibleSpace:
-            Platform.isWindows || Platform.isLinux || Platform.isMacOS
-            ? DragToMoveArea(child: Container(color: Colors.transparent))
-            : null,
-      ),
+      appBar: DraggableAppBar(title: const Text('编辑资料')),
       body: Obx(() {
         if (controller.loading.value) {
           return const Center(child: CircularProgressIndicator());

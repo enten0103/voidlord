@@ -18,6 +18,9 @@ class MediaLibraryDetailController extends GetxController {
   final searchConditions = <BookSearchCondition>[];
   final searchTitle = RxnString();
 
+  // 排序状态
+  final sort = 'id:desc'.obs;
+
   // 分页状态
   final limit = 20.obs;
   final offset = 0.obs;
@@ -77,11 +80,17 @@ class MediaLibraryDetailController extends GetxController {
           conditions: searchConditions,
           limit: limit.value,
           offset: 0,
+          sort: sort.value,
         );
         _appendBookDtos(resp.items);
         _updateNoMore(total: resp.total);
       } else {
-        final lib = await api.getLibrary(id, limit: limit.value, offset: 0);
+        final lib = await api.getLibrary(
+          id,
+          limit: limit.value,
+          offset: 0,
+          sort: sort.value,
+        );
         library.value = lib;
         await _appendItems(lib.items);
         _updateNoMore();
@@ -104,6 +113,7 @@ class MediaLibraryDetailController extends GetxController {
           conditions: searchConditions,
           limit: limit.value,
           offset: nextOffset,
+          sort: sort.value,
         );
         _appendBookDtos(resp.items);
         _updateNoMore(total: resp.total);
@@ -112,6 +122,7 @@ class MediaLibraryDetailController extends GetxController {
           libraryId!,
           limit: limit.value,
           offset: nextOffset,
+          sort: sort.value,
         );
         await _appendItems(lib.items);
         _updateNoMore(total: lib.itemsCount);
@@ -121,6 +132,14 @@ class MediaLibraryDetailController extends GetxController {
       // 忽略加载更多失败
     } finally {
       loadingMore.value = false;
+    }
+  }
+
+  Future<void> updateSort(String newSort) async {
+    if (sort.value == newSort) return;
+    sort.value = newSort;
+    if (libraryId != null || isSearchMode.value) {
+      await load(libraryId ?? 0);
     }
   }
 
@@ -188,6 +207,7 @@ class MediaLibraryDetailController extends GetxController {
       final lib = await api.getVirtualMyUploadedLibrary(
         limit: limit.value,
         offset: 0,
+        sort: sort.value,
       );
       library.value = lib;
       await _appendItems(lib.items);

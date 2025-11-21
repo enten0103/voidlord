@@ -18,6 +18,30 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
           }
           return Text(controller.library.value?.name ?? '媒体库');
         }),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            tooltip: '排序',
+            onSelected: controller.updateSort,
+            itemBuilder: (context) {
+              const options = {
+                'id:desc': '最新添加',
+                'id:asc': '最早添加',
+                'title:asc': '标题 A-Z',
+                'title:desc': '标题 Z-A',
+                'created_at:desc': '最新创建',
+                'created_at:asc': '最早创建',
+              };
+              return options.entries.map((e) {
+                return CheckedPopupMenuItem(
+                  value: e.key,
+                  checked: controller.sort.value == e.key,
+                  child: Text(e.value),
+                );
+              }).toList();
+            },
+          ),
+        ],
       ),
       body: Obx(() {
         if (controller.loading.value) {

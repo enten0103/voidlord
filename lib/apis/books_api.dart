@@ -131,6 +131,7 @@ extension BooksApi on Api {
     required List<BookSearchCondition> conditions,
     int? limit,
     int? offset,
+    String? sort,
   }) async {
     final body = <String, dynamic>{};
     if (conditions.isNotEmpty) {
@@ -138,6 +139,7 @@ extension BooksApi on Api {
     }
     if (limit != null) body['limit'] = limit;
     if (offset != null) body['offset'] = offset;
+    if (sort != null) body['sort'] = sort;
     final Response res = await client.post('/books/search', data: body);
     if (res.statusCode == 201) {
       // 分页对象

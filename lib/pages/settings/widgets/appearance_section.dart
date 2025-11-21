@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../services/theme_service.dart';
 import 'rgb_picker_dialog.dart';
 import 'font_list_dialog.dart';
+import 'advanced_theme_dialog.dart';
 
 class AppearanceSection extends StatelessWidget {
   const AppearanceSection({super.key});
@@ -45,6 +46,15 @@ class AppearanceSection extends StatelessWidget {
                   ),
                 _editColorButton(themeService),
               ],
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => showDialog(
+                context: context,
+                builder: (ctx) => AdvancedThemeDialog(service: themeService),
+              ),
+              icon: const Icon(Icons.palette),
+              label: const Text('高级主题设置'),
             ),
             const SizedBox(height: 24),
             _themeModeToggles(themeService),

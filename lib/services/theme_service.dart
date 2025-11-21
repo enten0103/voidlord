@@ -2,23 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:system_fonts/system_fonts.dart' as sf;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class ThemeService extends GetxService {
   static const _kSeedKey = 'theme_seed_argb';
   static const _kModeKey = 'theme_mode'; // system | light | dark
   static const _kFontKey = 'theme_font_family'; // 'system' or font family name
+  static const _kCustomColorsKey = 'theme_custom_colors'; // JSON string of map
 
   // 注意：使用 Rx<Color>(...) 而不是 .obs 在 MaterialColor 上，避免后续赋值普通 Color 时出现
   // “type 'Color' is not a subtype of type 'MaterialColor'” 的运行时类型冲突。
   final Rx<Color> seed = Rx<Color>(Colors.indigo);
   final Rx<ThemeMode> mode = ThemeMode.system.obs;
   final RxString fontFamily = 'system'.obs;
+  final RxMap<String, int> customColors = <String, int>{}.obs;
 
   ThemeData get lightTheme {
     final base = ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: seed.value,
         brightness: Brightness.light,
+        primary: _col('primary'),
+        secondary: _col('secondary'),
+        tertiary: _col('tertiary'),
+        surface: _col('surface'),
+        error: _col('error'),
       ),
       useMaterial3: true,
     );
@@ -30,10 +38,22 @@ class ThemeService extends GetxService {
       colorScheme: ColorScheme.fromSeed(
         seedColor: seed.value,
         brightness: Brightness.dark,
+        primary: _col('primary'),
+        secondary: _col('secondary'),
+        tertiary: _col('tertiary'),
+        surface: _col('surface'),
+        error: _col('error'),
       ),
       useMaterial3: true,
     );
     return _applyFont(base);
+  }
+
+  Color? _col(String key) {
+    if (customColors.containsKey(key)) {
+      return Color(customColors[key]!);
+    }
+    return null;
   }
 
   Future<ThemeService> init() async {
@@ -41,6 +61,7 @@ class ThemeService extends GetxService {
     final argb = sp.getInt(_kSeedKey);
     final modeStr = sp.getString(_kModeKey);
     final fontStr = sp.getString(_kFontKey);
+    final customStr = sp.getString(_kCustomColorsKey);
 
     if (argb != null) {
       seed.value = Color(argb);
@@ -51,7 +72,40 @@ class ThemeService extends GetxService {
     if (fontStr != null && fontStr.isNotEmpty) {
       fontFamily.value = fontStr;
     }
+    if (customStr != null) {
+      try {
+        final Map<String, dynamic> map = jsonDecode(customStr);
+        map.forEach((key, value) {
+          if (value is int) {
+            customColors[key] = value;
+          }
+        });
+      } catch (_) {}
+    }
     return this;
+  }
+
+  Future<void> setCustomColor(String key, Color? color) async {
+    if (color == null) {
+      customColors.remove(key);
+    } else {
+      customColors[key] = color.toARGB32();
+    }
+    await _saveCustomColors();
+  }
+
+  Future<void> clearCustomColors() async {
+    customColors.clear();
+    await _saveCustomColors();
+  }
+
+  Future<void> _saveCustomColors() async {
+    final sp = await SharedPreferences.getInstance();
+    if (customColors.isEmpty) {
+      await sp.remove(_kCustomColorsKey);
+    } else {
+      await sp.setString(_kCustomColorsKey, jsonEncode(customColors));
+    }
   }
 
   Future<void> applySeed(Color color) async {

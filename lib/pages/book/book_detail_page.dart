@@ -296,7 +296,21 @@ class BookDetailPage extends GetView<BookDetailController> {
         Wrap(
           spacing: 6,
           runSpacing: 6,
-          children: values.map((v) => Chip(label: Text(v))).toList(),
+          children: values
+              .map(
+                (v) => ActionChip(
+                  label: Text(v),
+                  onPressed: () => Get.toNamed(
+                    Routes.mediaLibraryDetail,
+                    arguments: {
+                      'searchConditions': [
+                        BookSearchCondition(target: key, op: 'match', value: v),
+                      ],
+                    },
+                  ),
+                ),
+              )
+              .toList(),
         ),
         const SizedBox(height: 12),
       ],

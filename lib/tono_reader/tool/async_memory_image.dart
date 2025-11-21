@@ -2,15 +2,13 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-import 'package:get/instance_manager.dart';
-import 'package:voidlord/tono_reader/state/tono_data_provider.dart';
 
 class AsyncMemoryImage extends ImageProvider<AsyncMemoryImage> {
   final Future<Uint8List> dataFuture;
   final String cacheKey;
+  final String? bookHash; // Add bookHash as a field
 
-  AsyncMemoryImage(this.dataFuture, this.cacheKey);
+  AsyncMemoryImage(this.dataFuture, this.cacheKey, {this.bookHash});
 
   @override
   Future<AsyncMemoryImage> obtainKey(ImageConfiguration configuration) {
@@ -39,32 +37,26 @@ class AsyncMemoryImage extends ImageProvider<AsyncMemoryImage> {
     );
   }
 
-  Future<Codec> _decodeData(
-    Uint8List data,
-    ImageDecoderCallback decode,
-  ) async {
+  Future<Codec> _decodeData(Uint8List data, ImageDecoderCallback decode) async {
     final buffer = await ImmutableBuffer.fromUint8List(data);
     return decode(buffer);
   }
 
-  int _generateHash() {
-    try {
-      return int.parse(
-          "${cacheKey.hashCode}${Get.find<TonoProvider>().bookHash.hashCode}");
-    } catch (e) {
-      return cacheKey.hashCode;
-    }
-  }
-
-  @override
-  int get hashCode => _generateHash();
-
-  @override
-  String toString() => '${objectRuntimeType(this, 'AsyncMemoryImage')}'
-      '("$cacheKey")';
-
   @override
   bool operator ==(Object other) {
-    return hashCode == other.hashCode;
+    if (other.runtimeType != runtimeType) {
+      return false;
+    }
+    return other is AsyncMemoryImage &&
+        other.cacheKey == cacheKey &&
+        other.bookHash == bookHash;
   }
+
+  @override
+  int get hashCode => Object.hash(cacheKey, bookHash);
+
+  @override
+  String toString() =>
+      '${objectRuntimeType(this, 'AsyncMemoryImage')}'
+      '("$cacheKey", bookHash: "$bookHash")';
 }

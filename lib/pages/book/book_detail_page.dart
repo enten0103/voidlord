@@ -215,6 +215,7 @@ class BookDetailPage extends GetView<BookDetailController> {
                             value: series,
                           ),
                         ],
+                        'searchTitle': series,
                       },
                     ),
               child: Text(
@@ -244,6 +245,7 @@ class BookDetailPage extends GetView<BookDetailController> {
                       value: author,
                     ),
                   ],
+                  'searchTitle': author,
                 },
               ),
               child: Text(
@@ -323,6 +325,7 @@ class BookDetailPage extends GetView<BookDetailController> {
                       'searchConditions': [
                         BookSearchCondition(target: key, op: 'match', value: v),
                       ],
+                      'searchTitle': '$key: $v',
                     },
                   ),
                 ),

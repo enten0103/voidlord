@@ -16,6 +16,7 @@ class MediaLibraryDetailController extends GetxController {
   // 搜索模式状态
   final isSearchMode = false.obs;
   final searchConditions = <BookSearchCondition>[];
+  final searchTitle = RxnString();
 
   // 分页状态
   final limit = 20.obs;
@@ -45,6 +46,9 @@ class MediaLibraryDetailController extends GetxController {
         searchConditions.addAll(
           (args['searchConditions'] as List).cast<BookSearchCondition>(),
         );
+        if (args['searchTitle'] is String) {
+          searchTitle.value = args['searchTitle'] as String;
+        }
         load(0); // 搜索模式下 ID 无意义，传 0
         return;
       }

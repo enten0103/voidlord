@@ -13,7 +13,8 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
       appBar: DraggableAppBar(
         title: Obx(() {
           if (controller.isSearchMode.value) {
-            return const Text('搜索结果');
+            final t = controller.searchTitle.value;
+            return Text(t != null ? '搜索: $t' : '搜索结果');
           }
           return Text(controller.library.value?.name ?? '媒体库');
         }),

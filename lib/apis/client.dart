@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import '../services/config_service.dart';
+import '../routes/app_routes.dart';
+import '../widgets/side_baner.dart';
 
 class Api {
   final Dio client;
@@ -27,6 +29,15 @@ class Api {
             options.headers.remove('Authorization');
           }
           handler.next(options);
+        },
+        onResponse: (response, handler) {
+          if (response.statusCode == 401) {
+            if (Get.currentRoute != Routes.login) {
+              SideBanner.warning('登录已过期，请重新登录');
+              Get.offAllNamed(Routes.login);
+            }
+          }
+          handler.next(response);
         },
       ),
     );

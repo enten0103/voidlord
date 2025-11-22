@@ -63,12 +63,15 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
                   mainAxisSpacing: 12,
                 ),
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  final b = controller.books[index];
+                  final book = controller.books[index];
                   return BookTile(
-                    title: b.title,
-                    author: b.author,
-                    cover: b.cover,
-                    onTap: () => Get.toNamed('/book/${b.id}', arguments: b.id),
+                    title: book.title,
+                    author: book.author,
+                    cover: book.cover,
+                    onTap: () => Get.toNamed(
+                      '/book/${book.id}',
+                      parameters: {'id': book.id.toString()},
+                    ),
                   );
                 }, childCount: controller.books.length),
               ),

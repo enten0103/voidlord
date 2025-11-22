@@ -22,7 +22,7 @@ class BookDetailController extends GetxController {
   // Rating state
   final ratingLoading = false.obs;
   final ratingError = RxnString();
-  final myRating = 0.obs; // 0 表示未评分
+  final myRating = 0.obs;
   final avgRating = 0.0.obs;
   final ratingCount = 0.obs;
 
@@ -33,7 +33,6 @@ class BookDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 确保媒体库服务已初始化（收藏操作依赖）
     try {
       final libs = Get.find<MediaLibrariesService>();
       libs.ensureInitialized();
@@ -150,7 +149,7 @@ class BookDetailController extends GetxController {
       if (await tonoJson.exists()) {
         await Get.toNamed(
           Routes.readerPage,
-          parameters: {'id': hash, 'type': 'local'},
+          parameters: {'hash': hash, 'type': 'local'},
         );
         return;
       }
@@ -173,7 +172,7 @@ class BookDetailController extends GetxController {
 
       await Get.toNamed(
         Routes.readerPage,
-        parameters: {'id': hash, 'type': 'local'},
+        parameters: {'hash': hash, 'type': 'local'},
       );
     } catch (e) {
       Get.snackbar('读取失败', e.toString(), snackPosition: SnackPosition.BOTTOM);

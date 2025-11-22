@@ -14,21 +14,7 @@ class BookDetailPage extends GetView<BookDetailController> {
   const BookDetailPage({super.key});
 
   @override
-  BookDetailController get controller {
-    String? tag;
-    final paramId = Get.parameters['id'];
-    if (paramId != null) {
-      tag = paramId;
-    } else if (Get.arguments is int) {
-      tag = (Get.arguments as int).toString();
-    } else if (Get.arguments is Map) {
-      final args = Get.arguments as Map;
-      if (args['id'] != null) {
-        tag = args['id'].toString();
-      }
-    }
-    return Get.find<BookDetailController>(tag: tag);
-  }
+  String? get tag => Get.parameters['id'];
 
   @override
   Widget build(BuildContext context) {

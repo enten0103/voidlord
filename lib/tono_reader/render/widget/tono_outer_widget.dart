@@ -72,7 +72,7 @@ class TonoOuterWidget extends StatelessWidget {
                   ),
                   itemScrollController: controller.itemScrollController,
                   itemPositionsListener: controller.itemPositionsListener,
-                  minCacheExtent: Get.height / 2,
+                  minCacheExtent: Get.height,
                   itemCount: progressor.totalElementCount,
                   separatorBuilder: (context, index) {
                     var histroyIndex = userData.histroy.toIndex();

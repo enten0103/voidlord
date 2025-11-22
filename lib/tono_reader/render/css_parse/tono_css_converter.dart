@@ -153,18 +153,24 @@ class FlutterStyleFromCss {
   _initAllStyle(List<TonoStyle> styleList) {
     Map<String, String> cssMap = styleList.toMap();
     flutterStyleMap['align-items'] = parseAlignItem(cssMap['align-items']);
-    flutterStyleMap['background-color'] =
-        parseBackgroundColor(cssMap['background-color']);
-    flutterStyleMap['background-image'] =
-        parseBackgroundImage(cssMap['background-image']);
-    flutterStyleMap['background-position'] =
-        parseBackgorundPosition(cssMap['background-position']);
-    flutterStyleMap['background-repeat'] =
-        parseBackgroundRepet(cssMap['background-repeat']);
-    flutterStyleMap['border-radius'] =
-        parseBorderRadius(cssMap['border-radius']);
-    flutterStyleMap['background-size'] =
-        parseBackgroundSize(cssMap['background-size']);
+    flutterStyleMap['background-color'] = parseBackgroundColor(
+      cssMap['background-color'],
+    );
+    flutterStyleMap['background-image'] = parseBackgroundImage(
+      cssMap['background-image'],
+    );
+    flutterStyleMap['background-position'] = parseBackgorundPosition(
+      cssMap['background-position'],
+    );
+    flutterStyleMap['background-repeat'] = parseBackgroundRepet(
+      cssMap['background-repeat'],
+    );
+    flutterStyleMap['border-radius'] = parseBorderRadius(
+      cssMap['border-radius'],
+    );
+    flutterStyleMap['background-size'] = parseBackgroundSize(
+      cssMap['background-size'],
+    );
     flutterStyleMap['box-shadow'] = parseBoxShadow(cssMap['box-shadow']);
     flutterStyleMap['color'] = parseColor(cssMap['color']);
     flutterStyleMap['font-weight'] = parseFontWeight(cssMap['font-weight']);
@@ -172,8 +178,9 @@ class FlutterStyleFromCss {
     flutterStyleMap['display'] = parseDisplay(cssMap['display']);
     flutterStyleMap['height'] = parseHeight(cssMap['height']);
     flutterStyleMap['max-height'] = parseHeight(cssMap['max-height']);
-    flutterStyleMap['justify-content'] =
-        parseJustifyContent(cssMap['justify-content']);
+    flutterStyleMap['justify-content'] = parseJustifyContent(
+      cssMap['justify-content'],
+    );
     flutterStyleMap['line-height'] = parseLineHeight(cssMap['line-height']);
     flutterStyleMap['margin-left'] = parseMargin(cssMap['margin-left']);
     flutterStyleMap['margin-right'] = parseMargin(cssMap['margin-right']);
@@ -183,8 +190,9 @@ class FlutterStyleFromCss {
     flutterStyleMap['text-align'] = parseTextAlign(cssMap['text-align']);
     flutterStyleMap['text-indent'] = parseTextIndent(cssMap['text-indent']);
     flutterStyleMap['text-shadow'] = parseTextShadow(cssMap['text-shadow']);
-    flutterStyleMap['transform-origin'] =
-        parseTransformOrigin(cssMap['transform-origin']);
+    flutterStyleMap['transform-origin'] = parseTransformOrigin(
+      cssMap['transform-origin'],
+    );
     flutterStyleMap['width'] = parseWidth(cssMap['width']);
     flutterStyleMap['max-width'] = parseWidth(cssMap['max-width']);
     flutterStyleMap['padding'] = parsePadding(cssMap);
@@ -203,11 +211,7 @@ class FlutterStyleFromCss {
   /// parent 应根据方向自取
   /// 默认应为width,少数情况下为height
   ///
-  double parseUnit(
-    String cssUnit,
-    double? parent,
-    double em,
-  ) {
+  double parseUnit(String cssUnit, double? parent, double em) {
     /// em
     if (cssUnit.contains('em')) {
       double emValue = double.parse(cssUnit.replaceAll('em', '')) * em;
@@ -215,8 +219,13 @@ class FlutterStyleFromCss {
 
       /// px
     } else if (cssUnit.contains('px')) {
-      double pxValue = double.parse(cssUnit.replaceAll('px', ''));
-      return pxValue;
+      //TODO fix here parse error
+      try {
+        double pxValue = double.parse(cssUnit.replaceAll('px', ''));
+        return pxValue;
+      } catch (e) {
+        return 0;
+      }
 
       /// %
     } else if (cssUnit.contains('%')) {
@@ -233,6 +242,9 @@ class FlutterStyleFromCss {
     } else if (cssUnit.contains("vw")) {
       double vwValue = double.parse(cssUnit.replaceAll('vw', ''));
       return Get.mediaQuery.size.height * vwValue / 100;
+    } else if (cssUnit.contains("pt")) {
+      double ptValue = double.parse(cssUnit.replaceAll('pt', ''));
+      return ptValue * 4 / 3;
     } else {
       /// px
       return double.parse(cssUnit);
@@ -282,8 +294,10 @@ class FlutterStyleFromCss {
   }
 
   Color? _parseRgb(String rgbStr) {
-    final params =
-        rgbStr.replaceAll(RegExp(r'^rgba?\(|\)$', caseSensitive: false), '');
+    final params = rgbStr.replaceAll(
+      RegExp(r'^rgba?\(|\)$', caseSensitive: false),
+      '',
+    );
     final parts = params.split(',').map((s) => s.trim()).toList();
 
     if (parts.length != 3 && parts.length != 4) return null;
@@ -301,7 +315,8 @@ class FlutterStyleFromCss {
     }
 
     final alphaHex = (a * 255).round().toRadixString(16).padLeft(2, '0');
-    final hex = alphaHex +
+    final hex =
+        alphaHex +
         r.toRadixString(16).padLeft(2, '0') +
         g.toRadixString(16).padLeft(2, '0') +
         b.toRadixString(16).padLeft(2, '0');

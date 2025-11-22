@@ -11,21 +11,23 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: DraggableAppBar(
-        title: const Text('媒体库'),
-        actions: [
-          // 刷新按钮
-          Obx(
-            () => IconButton(
-              tooltip: controller.loading.value ? '刷新中...' : '刷新',
-              icon: const Icon(Icons.refresh),
-              onPressed: controller.loading.value
-                  ? null
-                  : () => controller.service.loadAll(),
+      appBar: GetPlatform.isAndroid
+          ? null
+          : DraggableAppBar(
+              title: const Text('媒体库'),
+              actions: [
+                // 刷新按钮
+                Obx(
+                  () => IconButton(
+                    tooltip: controller.loading.value ? '刷新中...' : '刷新',
+                    icon: const Icon(Icons.refresh),
+                    onPressed: controller.loading.value
+                        ? null
+                        : () => controller.service.loadAll(),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       body: Obx(() {
         if (controller.loading.value) {
           return const Center(child: CircularProgressIndicator());

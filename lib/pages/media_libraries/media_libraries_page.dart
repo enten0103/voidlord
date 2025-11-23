@@ -4,6 +4,7 @@ import 'media_libraries_controller.dart';
 import '../../models/media_library_models.dart';
 import '../../routes/app_routes.dart';
 import '../../widgets/draggable_app_bar.dart';
+import '../../widgets/responsive_refresher.dart';
 
 class MediaLibrariesPage extends GetView<MediaLibrariesController> {
   const MediaLibrariesPage({super.key});
@@ -13,26 +14,12 @@ class MediaLibrariesPage extends GetView<MediaLibrariesController> {
     return Scaffold(
       appBar: GetPlatform.isAndroid
           ? null
-          : DraggableAppBar(
-              title: const Text('媒体库'),
-              actions: [
-                // 刷新按钮
-                Obx(
-                  () => IconButton(
-                    tooltip: controller.loading.value ? '刷新中...' : '刷新',
-                    icon: const Icon(Icons.refresh),
-                    onPressed: controller.loading.value
-                        ? null
-                        : () => controller.service.loadAll(),
-                  ),
-                ),
-              ],
-            ),
+          : DraggableAppBar(title: const Text('媒体库'), actions: []),
       body: Obx(() {
         if (controller.loading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        return RefreshIndicator(
+        return ResponsiveRefresher(
           onRefresh: () => controller.service.loadAll(),
           child: ListView(
             padding: const EdgeInsets.all(16),

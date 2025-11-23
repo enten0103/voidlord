@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'media_library_detail_controller.dart';
 import '../../widgets/book_tile.dart';
 import '../../widgets/draggable_app_bar.dart';
+import '../../widgets/responsive_refresher.dart';
 
 class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
   const MediaLibraryDetailPage({super.key});
@@ -50,81 +51,84 @@ class MediaLibraryDetailPage extends GetView<MediaLibraryDetailController> {
         if (controller.error.value != null) {
           return Center(child: Text(controller.error.value!));
         }
-        return Padding(
-          padding: const EdgeInsets.all(12),
-          child: CustomScrollView(
-            slivers: [
-              const SliverPadding(padding: EdgeInsets.only(top: 8)),
-              SliverGrid(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 180,
-                  childAspectRatio: 0.56,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                ),
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final book = controller.books[index];
-                  return BookTile(
-                    title: book.title,
-                    author: book.author,
-                    cover: book.cover,
-                    onTap: () => Get.toNamed(
-                      '/book/${book.id}',
-                      parameters: {'id': book.id.toString()},
-                    ),
-                  );
-                }, childCount: controller.books.length),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Obx(() {
-                      if (controller.loadingMore.value) {
-                        return const SizedBox(
-                          height: 40,
-                          child: Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        );
-                      }
-                      if (controller.noMore.value) {
-                        return Text(
-                          '已加载全部 (${controller.books.length})',
-                          style: Theme.of(context).textTheme.labelSmall,
-                        );
-                      }
-                      return OutlinedButton.icon(
-                        onPressed: controller.loadMore,
-                        icon: const Icon(Icons.more_horiz),
-                        label: const Text('加载更多'),
-                      );
-                    }),
+        return ResponsiveRefresher(
+          onRefresh: controller.refreshData,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: CustomScrollView(
+              slivers: [
+                const SliverPadding(padding: EdgeInsets.only(top: 8)),
+                SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 180,
+                    childAspectRatio: 0.56,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
-                ),
-              ),
-              if (controller.others.isNotEmpty) ...[
-                const SliverPadding(padding: EdgeInsets.only(top: 24)),
-                SliverToBoxAdapter(
-                  child: Text(
-                    '子库',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate((context, i) {
-                    final item = controller.others[i];
-                    return ListTile(
-                      leading: const Icon(Icons.folder),
-                      title: Text(
-                        item.childLibrary?.name ??
-                            '子库 #${item.childLibrary?.id ?? ''}',
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final book = controller.books[index];
+                    return BookTile(
+                      title: book.title,
+                      author: book.author,
+                      cover: book.cover,
+                      onTap: () => Get.toNamed(
+                        '/book/${book.id}',
+                        parameters: {'id': book.id.toString()},
                       ),
                     );
-                  }, childCount: controller.others.length),
+                  }, childCount: controller.books.length),
                 ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Center(
+                      child: Obx(() {
+                        if (controller.loadingMore.value) {
+                          return const SizedBox(
+                            height: 40,
+                            child: Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        }
+                        if (controller.noMore.value) {
+                          return Text(
+                            '已加载全部 (${controller.books.length})',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          );
+                        }
+                        return OutlinedButton.icon(
+                          onPressed: controller.loadMore,
+                          icon: const Icon(Icons.more_horiz),
+                          label: const Text('加载更多'),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+                if (controller.others.isNotEmpty) ...[
+                  const SliverPadding(padding: EdgeInsets.only(top: 24)),
+                  SliverToBoxAdapter(
+                    child: Text(
+                      '子库',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, i) {
+                      final item = controller.others[i];
+                      return ListTile(
+                        leading: const Icon(Icons.folder),
+                        title: Text(
+                          item.childLibrary?.name ??
+                              '子库 #${item.childLibrary?.id ?? ''}',
+                        ),
+                      );
+                    }, childCount: controller.others.length),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       }),

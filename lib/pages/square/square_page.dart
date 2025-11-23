@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../widgets/adaptive_book_grid.dart';
+import '../../widgets/responsive_refresher.dart';
 import '../../routes/app_routes.dart';
 import 'square_controller.dart';
 
@@ -25,7 +26,7 @@ class SquarePage extends GetView<SquareController> {
           ),
         );
       }
-      return RefreshIndicator(
+      return ResponsiveRefresher(
         onRefresh: () async => controller.load(),
         child: CustomScrollView(
           slivers: [

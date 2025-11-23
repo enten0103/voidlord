@@ -22,6 +22,13 @@ class PermissionsController extends GetxController {
 
   Api get api => Get.find<Api>();
 
+  Future<void> refreshData() async {
+    await loadMine();
+    if (targetUserId.value != null) {
+      await loadTarget(targetUserId.value!);
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();

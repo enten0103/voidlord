@@ -5,6 +5,7 @@ import '../../services/media_libraries_service.dart';
 import '../../widgets/side_baner.dart';
 import '../../models/recommendations_models.dart';
 import '../../models/media_library_models.dart';
+import '../../widgets/responsive_refresher.dart';
 
 class RecommendationsPage extends GetView<RecommendationsController> {
   const RecommendationsPage({super.key});
@@ -28,7 +29,7 @@ class RecommendationsPage extends GetView<RecommendationsController> {
           ),
         );
       }
-      return RefreshIndicator(
+      return ResponsiveRefresher(
         onRefresh: () async {
           await libs.loadAll();
           await controller.load();
@@ -42,21 +43,6 @@ class RecommendationsPage extends GetView<RecommendationsController> {
                   child: Text(
                     '推荐分区管理',
                     style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                ),
-                // 刷新按钮：重新加载媒体库与分区
-                Obx(
-                  () => IconButton(
-                    tooltip: (controller.loading.value || libs.loading.value)
-                        ? '刷新中'
-                        : '刷新',
-                    icon: const Icon(Icons.refresh),
-                    onPressed: (controller.loading.value || libs.loading.value)
-                        ? null
-                        : () async {
-                            await libs.loadAll();
-                            await controller.load();
-                          },
                   ),
                 ),
                 const SizedBox(width: 8),

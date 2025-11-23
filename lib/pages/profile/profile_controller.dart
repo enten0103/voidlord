@@ -10,10 +10,10 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _load();
+    load();
   }
 
-  Future<void> _load() async {
+  Future<void> load() async {
     loading.value = true;
     error.value = null;
     try {

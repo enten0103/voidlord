@@ -66,6 +66,15 @@ class MediaLibraryDetailController extends GetxController {
     }
   }
 
+  Future<void> refreshData() async {
+    if (Get.arguments is Map &&
+        (Get.arguments as Map)['virtualMyUploaded'] == true) {
+      await _loadVirtualMyUploaded();
+    } else {
+      await load(libraryId ?? 0);
+    }
+  }
+
   Future<void> load(int id) async {
     // 初次加载或刷新重置分页
     loading.value = true;

@@ -4,6 +4,7 @@ import 'package:voidlord/models/permission_models.dart';
 import 'package:voidlord/pages/permissions/permissions_controller.dart';
 import 'package:voidlord/services/permission_service.dart';
 import 'package:voidlord/widgets/side_baner.dart';
+import '../../widgets/responsive_refresher.dart';
 
 // 新的批量权限编辑控制器
 
@@ -23,21 +24,24 @@ class PermissionsPage extends GetView<PermissionsController> {
     return Obx(() {
       return Scaffold(
         backgroundColor: Colors.transparent,
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            // 使用 stretch 让子组件（Card 等）占满可用宽度，保证等宽
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('权限管理', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 12),
-              _myPermissionsCard(context, controller),
-              const SizedBox(height: 20),
-              _targetUserInputCard(context, controller),
-              const SizedBox(height: 20),
-              if (controller.targetUserId.value != null)
-                _batchEditorCard(context, controller),
-            ],
+        body: ResponsiveRefresher(
+          onRefresh: controller.refreshData,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              // 使用 stretch 让子组件（Card 等）占满可用宽度，保证等宽
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('权限管理', style: Theme.of(context).textTheme.headlineMedium),
+                const SizedBox(height: 12),
+                _myPermissionsCard(context, controller),
+                const SizedBox(height: 20),
+                _targetUserInputCard(context, controller),
+                const SizedBox(height: 20),
+                if (controller.targetUserId.value != null)
+                  _batchEditorCard(context, controller),
+              ],
+            ),
           ),
         ),
         floatingActionButton: controller.targetUserId.value != null

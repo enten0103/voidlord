@@ -51,16 +51,17 @@ jobs:
       - name: Rename APKs
         run: |
           COMMIT_HASH=$(git rev-parse --short HEAD)
+          echo "SHORT_SHA=$COMMIT_HASH" >> $GITHUB_ENV
+          
           cd build/app/outputs/flutter-apk/
           
-          # 先处理 Universal APK，避免被下面的通配符匹配
+          # 先处理 Universal APK
           if [ -f app-release.apk ]; then
             mv app-release.apk "VoidLord-Android-Universal-${COMMIT_HASH}.apk"
           fi
           
           # 再处理 Split APKs
           for file in app-*-release.apk; do
-            # 确保不处理已经重命名的文件（虽然名字模式不同，但为了保险）
             if [[ "$file" == "app-release.apk" ]]; then continue; fi
             
             if [ -f "$file" ]; then
@@ -70,12 +71,12 @@ jobs:
             fi
           done
           
-          ls -la # 打印文件列表以便调试
+          ls -la
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-release-apk
+          name: VoidLord-Android-${{ env.SHORT_SHA }}
           path: build/app/outputs/flutter-apk/*.apk
 
   build-windows:
@@ -103,6 +104,8 @@ jobs:
       - name: Rename Installer
         run: |
           $hash = git rev-parse --short HEAD
+          echo "SHORT_SHA=$hash" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
           $installer = Get-ChildItem build\installer\*.exe | Select-Object -First 1
           if ($installer) {
               Write-Host "Renaming $($installer.FullName) to VoidLord-Windows-x64-$hash.exe"
@@ -115,5 +118,5 @@ jobs:
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
+          name: VoidLord-Windows-${{ env.SHORT_SHA }}
           path: build/installer/*.exe

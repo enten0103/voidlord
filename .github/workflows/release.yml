@@ -73,7 +73,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-release-apk
+          name: VoidLord-Android-${{ github.ref_name }}
           path: build/app/outputs/flutter-apk/*.apk
 
   build-windows:
@@ -113,7 +113,7 @@ jobs:
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
+          name: VoidLord-Windows-${{ github.ref_name }}
           path: build/installer/*.exe
 
   release:
@@ -130,13 +130,13 @@ jobs:
       - name: Download Android Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: android-release-apk
+          name: VoidLord-Android-${{ github.ref_name }}
           path: artifacts/android
 
       - name: Download Windows Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: windows-installer
+          name: VoidLord-Windows-${{ github.ref_name }}
           path: artifacts/windows
 
       - name: Generate Changelog

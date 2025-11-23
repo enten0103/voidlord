@@ -1,9 +1,9 @@
-name: Build
+name: Release
 
 on:
   push:
-    branches: [ "master" ]
-  workflow_dispatch:
+    tags:
+      - 'v*'
 
 jobs:
   build-android:
@@ -39,7 +39,6 @@ jobs:
             echo "storeFile=upload-keystore.jks" >> android/key.properties
           else
             echo "Warning: Secret ANDROID_KEYSTORE_BASE64 not found."
-            echo "Build may fail if signing config requires these files."
           fi
 
       - name: Get dependencies
@@ -50,27 +49,26 @@ jobs:
 
       - name: Rename APKs
         run: |
-          COMMIT_HASH=$(git rev-parse --short HEAD)
+          TAG_NAME=${{ github.ref_name }}
           cd build/app/outputs/flutter-apk/
           
-          # 先处理 Universal APK，避免被下面的通配符匹配
+          # 先处理 Universal APK
           if [ -f app-release.apk ]; then
-            mv app-release.apk "VoidLord-Android-Universal-${COMMIT_HASH}.apk"
+            mv app-release.apk "VoidLord-Android-Universal-${TAG_NAME}.apk"
           fi
           
           # 再处理 Split APKs
           for file in app-*-release.apk; do
-            # 确保不处理已经重命名的文件（虽然名字模式不同，但为了保险）
             if [[ "$file" == "app-release.apk" ]]; then continue; fi
             
             if [ -f "$file" ]; then
               arch=${file#app-}
               arch=${arch%-release.apk}
-              mv "$file" "VoidLord-Android-${arch}-${COMMIT_HASH}.apk"
+              mv "$file" "VoidLord-Android-${arch}-${TAG_NAME}.apk"
             fi
           done
           
-          ls -la # 打印文件列表以便调试
+          ls -la
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -102,11 +100,11 @@ jobs:
 
       - name: Rename Installer
         run: |
-          $hash = git rev-parse --short HEAD
+          $tag = "${{ github.ref_name }}"
           $installer = Get-ChildItem build\installer\*.exe | Select-Object -First 1
           if ($installer) {
-              Write-Host "Renaming $($installer.FullName) to VoidLord-Windows-x64-$hash.exe"
-              Rename-Item $installer.FullName "VoidLord-Windows-x64-$hash.exe"
+              Write-Host "Renaming $($installer.FullName) to VoidLord-Windows-x64-$tag.exe"
+              Rename-Item $installer.FullName "VoidLord-Windows-x64-$tag.exe"
           } else {
               Write-Host "No installer found in build\installer\"
               Get-ChildItem build\installer\
@@ -117,3 +115,54 @@ jobs:
         with:
           name: windows-installer
           path: build/installer/*.exe
+
+  release:
+    name: Create Release
+    needs: [build-android, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Android Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-apk
+          path: artifacts/android
+
+      - name: Download Windows Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: artifacts/windows
+
+      - name: Generate Changelog
+        run: |
+          CURRENT_TAG=${{ github.ref_name }}
+          # Try to find the previous tag
+          PREV_TAG=$(git describe --abbrev=0 --tags ${CURRENT_TAG}^ 2>/dev/null || echo "")
+          
+          echo "Generating changelog for $CURRENT_TAG (Previous: $PREV_TAG)"
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "Initial Release" > changelog.txt
+            echo "" >> changelog.txt
+            git log --pretty=format:"- %s" $CURRENT_TAG >> changelog.txt
+          else
+            echo "Changes since $PREV_TAG" > changelog.txt
+            echo "" >> changelog.txt
+            git log --pretty=format:"- %s" $PREV_TAG..$CURRENT_TAG >> changelog.txt
+          fi
+          
+          cat changelog.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: changelog.txt
+          files: |
+            artifacts/android/*.apk
+            artifacts/windows/*.exe

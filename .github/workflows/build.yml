@@ -48,6 +48,21 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Rename APKs
+        run: |
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          cd build/app/outputs/flutter-apk/
+          for file in app-*-release.apk; do
+            if [ -f "$file" ]; then
+              arch=${file#app-}
+              arch=${arch%-release.apk}
+              mv "$file" "VoidLord-Android-${arch}-${COMMIT_HASH}.apk"
+            fi
+          done
+          if [ -f app-release.apk ]; then
+            mv app-release.apk "VoidLord-Android-Universal-${COMMIT_HASH}.apk"
+          fi
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
@@ -75,6 +90,14 @@ jobs:
 
       - name: Compile Installer
         run: iscc windows/installer/installer.iss
+
+      - name: Rename Installer
+        run: |
+          $hash = git rev-parse --short HEAD
+          $installer = Get-ChildItem build/installer/*.exe | Select-Object -First 1
+          if ($installer) {
+              Rename-Item $installer.FullName "VoidLord-Windows-x64-$hash.exe"
+          }
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
